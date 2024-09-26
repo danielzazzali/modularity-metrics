@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js --path=/home/daniel/Workspace/oop-metrics",
+    "start": "node index.js --path=/home/daniel/Workspace/example",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "private": true,
