@@ -1,12 +1,13 @@
-import {getFiles} from "./input.js";
-import {parse} from '@babel/parser';
+import { getFiles } from "./input.js";
 import fs from "fs";
-import {BABEL_PARSER_OPTIONS} from "../constants/constants.js";
+import { parse } from "@babel/parser";
+import { BABEL_PARSER_OPTIONS, ERROR_ON_FILE_MESSAGE, FILE_ENCODING } from "../constants/constants.js";
+
 
 const files = getFiles();
 
 function getAST(filePath) {
-    const code = fs.readFileSync(filePath, 'utf-8');
+    const code = fs.readFileSync(filePath, FILE_ENCODING);
     return parse(code, BABEL_PARSER_OPTIONS);
 }
 
@@ -21,7 +22,7 @@ function getAllASTs() {
                 ast: ast
             });
         } catch (error) {
-            console.error(`Error on file ${file.fileName}:`, error);
+            console.error(`${ERROR_ON_FILE_MESSAGE} ${file.fileName}:`, error);
         }
     });
 

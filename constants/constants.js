@@ -31,3 +31,7 @@ export const BABEL_PARSER_OPTIONS = {
         'typescript'
     ]
 };
+
+export const ERROR_ON_FILE_MESSAGE = `Error on file`;
+
+export const REQUIRE_CALLEE_NAME = 'require';
