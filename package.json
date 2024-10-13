@@ -5,8 +5,12 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js --path=/home/daniel/Workspace/example-metrics",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "install-local": "npm install -g"
+  },
+  "bin": {
+    "metrics": "./index.js"
   },
   "private": true,
   "dependencies": {

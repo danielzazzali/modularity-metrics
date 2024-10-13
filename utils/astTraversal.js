@@ -1,5 +1,5 @@
 import traverse from "@babel/traverse";
-import { getAllASTs } from "./ast.js";
+import { getAllASTs } from "./astProcessor.js";
 
 function traverseASTsFan(visitors) {
     const ASTs = getAllASTs();

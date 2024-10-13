@@ -1,10 +1,7 @@
-import { getFiles } from "./input.js";
+import { getFiles } from "./fileReader.js";
 import fs from "fs";
 import { parse } from "@babel/parser";
 import { BABEL_PARSER_OPTIONS, ERROR_ON_FILE_MESSAGE, FILE_ENCODING } from "../constants/constants.js";
-
-
-const files = getFiles();
 
 function getAST(filePath) {
     const code = fs.readFileSync(filePath, FILE_ENCODING);
@@ -12,6 +9,7 @@ function getAST(filePath) {
 }
 
 function getAllASTs() {
+    const files = getFiles();
     const astArray = [];
 
     files.forEach(file => {

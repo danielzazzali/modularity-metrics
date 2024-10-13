@@ -1,10 +1,3 @@
-
-/**
-Javascript manage args like this:
-    args[0]             args[1]        args[2]    args[3]     args[4]
-    node-interpreter    mi-script.js   arg1       arg2        arg3
-*/
-
 export const LONG_ARGUMENT_INDICATOR = '--';
 export const FLAG_INDICATOR = '-';
 export const ARGUMENT_VALUE_SEPARATOR = '=';
