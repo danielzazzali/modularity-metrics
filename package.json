@@ -10,11 +10,12 @@
     "install-local": "npm install -g"
   },
   "bin": {
-    "metrics": "./index.js"
+    "metrics": "index.js"
   },
   "private": true,
   "dependencies": {
     "@babel/parser": "^7.25.6",
-    "@babel/traverse": "^7.25.6"
+    "@babel/traverse": "^7.25.6",
+    "metrics": "^0.1.21"
   }
 }

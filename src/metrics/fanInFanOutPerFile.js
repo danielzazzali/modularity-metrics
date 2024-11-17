@@ -1,6 +1,6 @@
 import path from "path";
 import { REQUIRE_CALLEE_NAME } from "../constants/constants.js";
-import { traverseASTsFan } from "../utils/astTraversal.js";
+import { traverseASTs } from "../ast/astTraversal.js";
 
 function getVisitors() {
     return {
@@ -22,31 +22,31 @@ function getVisitors() {
     };
 }
 
-function calculateFanMetrics() {
+function calculateFanInFanOutPerFile() {
     const visitors = getVisitors();
-    const ASTResults = traverseASTsFan(visitors);
+    const ASTResults = traverseASTs(visitors);
 
-    const fileDependencies = {};
-    const reverseDependencies = {};
+    const fanOut = {};
+    const fanIn = {};
 
     ASTResults.forEach(({ fileName, results: importedFiles }) => {
-        fileDependencies[fileName] = importedFiles;
+        fanOut[fileName] = importedFiles;
 
         importedFiles.forEach((importedFile) => {
-            if (!reverseDependencies[importedFile]) {
-                reverseDependencies[importedFile] = [];
+            if (!fanIn[importedFile]) {
+                fanIn[importedFile] = [];
             }
-            reverseDependencies[importedFile].push(fileName);
+            fanIn[importedFile].push(fileName);
         });
     });
 
     return ASTResults.map(({ fileName }) => {
         return {
             filename: fileName,
-            fanOut: fileDependencies[fileName] || [],
-            fanIn: reverseDependencies[fileName] || []
+            fanOut: fanOut[fileName],
+            fanIn: fanIn[fileName] || []
         };
     });
 }
 
-export { calculateFanMetrics };
+export { calculateFanInFanOutPerFile };

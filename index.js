@@ -1,50 +1,51 @@
-#!/usr/bin/env node
-
-import { calculateFanMetrics } from "./metrics/fan.js";
-import { getArgs, getCustomPath } from "./utils/argumentParser.js";
-import { setCustomPath } from "./utils/config.js";
-import { fileURLToPath } from 'url';
-import path from 'path';
-import { prettyPrint } from "./utils/output.js";
+import { config } from './src/config/config.js';
+import { METRIC_TYPES, METRIC_PATHS, MESSAGES } from './src/constants/constants.js';
 
 /**
- * Get the current file's path in ES modules.
- * `import.meta.url` gives the URL of the current module, and
- * `fileURLToPath(import.meta.url)` converts it to a file path.
+ * Dynamically calculates selected metrics based on the provided options.
+ * @param {Object} options The options object containing the path and metrics to calculate.
+ * @param {string} options.path The path to the source code files.
+ * @param {Array<string>} options.metricsToCalculate The list of metrics to calculate (from MetricTypes Enum).
+ * @returns {Object} The calculated metrics.
  */
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+async function calculateMetrics({ path, metricsToCalculate = [] }) {
+    config.customPath = path;
 
-/**
- * Calculate metrics based on the provided custom path and options.
- *
- * This function computes fan metrics by reading the specified files
- * and applying analysis based on the configuration provided through
- * command-line arguments or function parameters.
- *
- * @param {string} customPath - The custom path to be used for file processing.
- * @param {Object} options - An object containing options for metric calculation.
- * @param args
- * @param {string} [options.path] - Optional path that overrides the command-line or default path.
- * @param {type} [options.otherOption1] - Placeholder for additional options.
- * @param {type} [options.otherOption2] - Placeholder for additional options.
- * @returns {Object} - The calculated metrics in a JSON-like format.
- */
-function calculateMetrics(customPath, options, args = getArgs()) {
-    // Set the custom path for metric calculation, prioritizing function arguments over CLI args
-    setCustomPath(customPath || options.path || getCustomPath(args));
-    return calculateFanMetrics(); // Perform the metric calculations
+    const metricsResults = {};
+    const availableMetrics = Object.values(METRIC_TYPES);
+
+    // Iterate through the selected metrics
+    for (const metric of metricsToCalculate) {
+        // Check if the metric exists in the MetricTypes enum
+        if (availableMetrics.includes(metric)) {
+            // Dynamically import and calculate the selected metric
+            switch (metric) {
+                case METRIC_TYPES.FAN_IN_FAN_OUT_PER_FILE:
+                    const { calculateFanInFanOutPerFile } = await import(METRIC_PATHS.FAN_IN_FAN_OUT_PER_FILE);
+                    metricsResults[METRIC_TYPES.FAN_IN_FAN_OUT_PER_FILE] = calculateFanInFanOutPerFile();
+                    break;
+                case METRIC_TYPES.FAN_IN_FAN_OUT_PER_CLASS:
+                    const { calculateFanInFanOutPerClass } = await import(METRIC_PATHS.FAN_IN_FAN_OUT_PER_CLASS);
+                    metricsResults[METRIC_TYPES.FAN_IN_FAN_OUT_PER_CLASS] = calculateFanInFanOutPerClass();
+                    break;
+                case METRIC_TYPES.CLASSES_PER_FILE:
+                    const { calculateClassesPerFile } = await import(METRIC_PATHS.CLASSES_PER_FILE);
+                    metricsResults[METRIC_TYPES.CLASSES_PER_FILE] = calculateClassesPerFile();
+                    break;
+                case METRIC_TYPES.METHODS_PER_FILE:
+                    const { calculateMethodsPerFile } = await import(METRIC_PATHS.METHODS_PER_FILE);
+                    metricsResults[METRIC_TYPES.METHODS_PER_FILE] = calculateMethodsPerFile();
+                    break;
+                default:
+                    console.warn(`${MESSAGES.WARNINGS.UNRECOGNIZED_METRIC} ${metric}`);
+                    break;
+            }
+        } else {
+            console.warn(`${MESSAGES.WARNINGS.INVALID_METRIC} ${metric}`);
+        }
+    }
+
+    return metricsResults;
 }
 
-/**
- * If the script is executed directly (from the command line),
- * this block runs the default behavior for CLI execution.
- */
-if (import.meta.url === `file://${path.resolve(__filename)}`) {
-    const args = getArgs(); // Capture command-line arguments
-    const result = calculateMetrics(getCustomPath(args), {}, args); // Run the metrics calculation
-    prettyPrint(result); // Output the result as a formatted JSON string
-}
-
-// Export the function for use as a module in other scripts
-export { calculateMetrics };
+export { calculateMetrics, METRIC_TYPES };
