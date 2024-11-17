@@ -1,7 +1,12 @@
 import { traverseASTs } from "../ast/astTraversal.js";
 
+function getVisitors() {
+}
+
 function calculateFanInFanOutPerClass() {
-    return 'TODO'
+    const visitors = getVisitors();
+    const ASTResults = traverseASTs(visitors);
+
 }
 
 export { calculateFanInFanOutPerClass };

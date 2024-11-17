@@ -25,7 +25,7 @@ export const METRIC_PATHS = {
 };
 
 export const METRIC_TYPES = {
-    FAN_IN_FAN_OUT_PER_FILE: 'fanInFanOut',
+    FAN_IN_FAN_OUT_PER_FILE: 'fanInFanOutPerFile',
     FAN_IN_FAN_OUT_PER_CLASS: 'fanInFanOutPerClass',
     CLASSES_PER_FILE: 'classesPerFile',
     METHODS_PER_FILE: 'methodsPerFile',
