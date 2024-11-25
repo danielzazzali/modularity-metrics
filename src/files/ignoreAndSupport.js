@@ -19,12 +19,11 @@ function getIgnored(rootPath) {
     let ignoreFiles = [];
 
     try {
-        // Check if the ignore file exists and read its contents
         if (fs.existsSync(ignorePath)) {
             ignoreFiles = fs.readFileSync(ignorePath, FILE_ENCODING)
-                .split(LINE_BREAK)  // Split the file into lines
-                .map(line => path.join(rootPath, line.trim()))  // Resolve to absolute paths
-                .filter(Boolean);  // Remove any empty lines
+                .split(LINE_BREAK)
+                .map(line => path.resolve(rootPath, line.trim()))  // Use path.resolve to get absolute paths
+                .filter(Boolean);
         }
     } catch (error) {
         console.error(`${MESSAGES.ERRORS.ERROR_READING_IGNORE_FILE} ${ignorePath}:`, error);

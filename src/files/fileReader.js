@@ -11,21 +11,18 @@ import { getIgnored, isSupported } from "./ignoreAndSupport.js";
  * @param {Array} arrayOfFiles - The array to accumulate supported files.
  */
 function readDirectory(directory, ignoreFiles, arrayOfFiles) {
-    const files = fs.readdirSync(directory, { withFileTypes: true }); // Use withFileTypes for better performance
+    const files = fs.readdirSync(directory, { withFileTypes: true });
 
     for (const file of files) {
-        const absolutePath = path.resolve(directory, file.name); // Resolve to absolute path for comparison
+        const absolutePath = path.resolve(directory, file.name);
 
-        // Skip if it's in node_modules or ignored
         if (absolutePath.includes(NODE_MODULES_DIRECTORY) || ignoreFiles.includes(absolutePath)) {
             continue;
         }
 
         if (file.isDirectory()) {
-            // Recurse into subdirectory
             readDirectory(absolutePath, ignoreFiles, arrayOfFiles);
         } else if (isSupported(absolutePath)) {
-            // Add supported file to array
             arrayOfFiles.push({
                 filePath: absolutePath,
                 fileName: file.name
