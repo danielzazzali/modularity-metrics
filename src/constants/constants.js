@@ -44,6 +44,8 @@ export const MESSAGES = {
         FAILED_FETCHING_ASTS: 'Failed to fetch the ASTs.',
         ERROR_READING_IGNORE_FILE: 'Error reading .ignore file at',
         FAILED_TO_PARSE_FILE: 'Failed to parse file: ',
+        LOADING_METRIC: 'Error loading metric',
+        FROM: ' from ',
     },
     INFO: {
         DONE: 'Done!',
