@@ -1,14 +1,19 @@
 class Config {
     constructor() {
-        this._customPath = null;
+        if (Config.instance) {
+            return Config.instance;
+        }
+        Config.instance = this;
+
+        this._path = null;
     }
 
-    get customPath() {
-        return this._customPath;
+    get path() {
+        return this._path || process.cwd();
     }
 
-    set customPath(path) {
-        this._customPath = path;
+    set path(path) {
+        this._path = path;
     }
 }
 

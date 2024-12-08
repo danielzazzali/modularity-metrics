@@ -1,33 +1,33 @@
 import { config } from './src/config/config.js';
-import { MESSAGES } from './src/constants/constants.js';
+import { DEFAULT_METRICS } from "./src/metrics/index.js";
+import { getFiles } from "./src/files/fileReader.js";
+import { MESSAGES } from "./src/constants/constants.js";
+import { getASTs } from "./src/ast/astProcessor.js";
+import { executeMetric } from "./src/ast/executeMetric.js";
 
-/**
- * Calculates all metrics based on the provided metricsConfig.
- * @param {Object} options The options object containing the path and the config JSON.
- * @param {string} options.path The path to the source code files.
- * @param {Object} options.metricsConfig JSON containing metric names and their paths.
- * @returns {Object} The calculated metrics.
- */
-async function calculateMetrics({ path, metricsConfig }) {
-    config.customPath = path;
 
-    const metricsResults = {};
+async function calculateMetrics({path = undefined, metrics = [], useDefaultMetrics = true} = {}) {
+    config.path = path || config.path;
 
-    // Iterate through all metrics defined in the config
-    for (const { name, path: metricPath } of metricsConfig.metrics) {
-        try {
-            const metricModule = await import(metricPath);
-            if (metricModule[name]) {
-                metricsResults[name] = await metricModule[name]();
-            } else {
-                console.warn(`${MESSAGES.WARNINGS.UNRECOGNIZED_METRIC} ${name}`);
-            }
-        } catch (error) {
-            console.error(`${MESSAGES.ERRORS.LOADING_METRIC}${MESSAGES.ERRORS.FROM}${name}${MESSAGES.ERRORS.FROM}${metricPath}:`, error);
-        }
+    if (metrics.length === 0 && !useDefaultMetrics) {
+        throw new Error(MESSAGES.ERRORS.ERROR_NO_METRICS);
     }
 
-    return metricsResults;
+    const metricsToLoad = metrics.length === 0
+        ? DEFAULT_METRICS
+        : (useDefaultMetrics ? [...DEFAULT_METRICS, ...metrics] : metrics);
+
+    const files = await getFiles();
+    const ASTs = await getASTs(files);
+
+    const results = [];
+
+    for (const metric of metricsToLoad) {
+        const result = await executeMetric(metric, ASTs);
+        results.push(result);
+    }
+
+    return results;
 }
 
 export { calculateMetrics };

@@ -1,37 +1,37 @@
-import { traverseASTs } from "../ast/astTraversal.js";
+// src/metrics/classesPerFile.js
+const state = {
+    results: [],
+};
 
-function getClassesVisitors() {
-    return {
-        ClassDeclaration(pathNode, state) {
-            const className = pathNode.node.id.name;
+const visitors = {
+    ClassDeclaration(path, state) {
+        const className = path.node.id.name;
+        state.results.push(className);
+    },
+    ClassExpression(path, state) {
+        if (path.node.id) {
+            const className = path.node.id.name;
             state.results.push(className);
-        },
-        ClassExpression(pathNode, state) {
-            if (pathNode.node.id) {
-                const className = pathNode.node.id.name;
-                state.results.push(className);
-            }
         }
-    };
-}
+    }
+};
 
-
-function calculateClassesPerFile() {
-    const visitors = getClassesVisitors();
-    const ASTResults = traverseASTs(visitors);
-
+const postProcessing = (state) => {
     const classes = {};
 
-    ASTResults.forEach(({ fileName, results: classNames }) => {
-        classes[fileName] = classNames;
+    state.results.forEach((className) => {
+        if (!classes[className]) {
+            classes[className] = [];
+        }
+        classes[className].push(className);
     });
 
-    return ASTResults.map(({ fileName }) => {
+    state.results = Object.keys(classes).map((fileName) => {
         return {
             filename: fileName,
             classes: classes[fileName]
         };
     });
-}
+};
 
-export { calculateClassesPerFile };
+export { state, visitors, postProcessing };

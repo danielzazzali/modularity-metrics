@@ -17,20 +17,6 @@ export const BABEL_PARSER_OPTIONS = {
 
 export const REQUIRE_CALLEE_NAME = 'require';
 
-export const METRIC_PATHS = {
-    FAN_IN_FAN_OUT_PER_FILE: './src/metrics/fanInFanOutPerFile.js',
-    FAN_IN_FAN_OUT_PER_CLASS: './src/metrics/fanInFanOutPerClass.js',
-    CLASSES_PER_FILE: './src/metrics/classesPerFile.js',
-    METHODS_PER_FILE: './src/metrics/methodsPerFile.js',
-};
-
-export const METRIC_TYPES = {
-    FAN_IN_FAN_OUT_PER_FILE: 'fanInFanOutPerFile',
-    FAN_IN_FAN_OUT_PER_CLASS: 'fanInFanOutPerClass',
-    CLASSES_PER_FILE: 'classesPerFile',
-    METHODS_PER_FILE: 'methodsPerFile',
-};
-
 export const MESSAGES = {
     WARNINGS: {
         INVALID_METRIC: 'Invalid metric: ',
@@ -46,6 +32,7 @@ export const MESSAGES = {
         FAILED_TO_PARSE_FILE: 'Failed to parse file: ',
         LOADING_METRIC: 'Error loading metric',
         FROM: ' from ',
+        ERROR_NO_METRICS: 'No metrics provided and useDefaultMetrics is set to false',
     },
     INFO: {
         DONE: 'Done!',

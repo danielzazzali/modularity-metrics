@@ -1,48 +1,38 @@
 import path from 'path';
-import fs from 'fs';
+import fs from 'fs/promises';
 import { NODE_MODULES_DIRECTORY } from "../constants/constants.js";
 import { config } from '../config/config.js';
 import { getIgnored, isSupported } from "./ignoreAndSupport.js";
 
-/**
- * Reads a directory recursively, ignoring specified files and folders, and collecting supported files.
- * @param {string} directory - The directory to read.
- * @param {Array} ignoreFiles - Array of files/folders to ignore.
- * @param {Array} arrayOfFiles - The array to accumulate supported files.
- */
-function readDirectory(directory, ignoreFiles, arrayOfFiles) {
-    const files = fs.readdirSync(directory, { withFileTypes: true });
+async function readDirectory(directory, ignoreFiles) {
+    const files = await fs.readdir(directory, { withFileTypes: true });
+    const arrayOfFiles = [];
 
-    for (const file of files) {
+    await Promise.all(files.map(async (file) => {
         const absolutePath = path.resolve(directory, file.name);
 
         if (absolutePath.includes(NODE_MODULES_DIRECTORY) || ignoreFiles.includes(absolutePath)) {
-            continue;
+            return;
         }
 
         if (file.isDirectory()) {
-            readDirectory(absolutePath, ignoreFiles, arrayOfFiles);
+            const subFiles = await readDirectory(absolutePath, ignoreFiles);
+            arrayOfFiles.push(...subFiles);
         } else if (isSupported(absolutePath)) {
             arrayOfFiles.push({
                 filePath: absolutePath,
                 fileName: file.name
             });
         }
-    }
-}
-
-/**
- * Retrieves all files in the specified directory (or current working directory by default), excluding ignored ones.
- * @returns {Array} - Array of file objects containing filePath and fileName.
- */
-function getFiles() {
-    const arrayOfFiles = [];
-    const basePath = config.customPath || process.cwd(); // Use the custom path or current working directory
-
-    const ignoreFiles = getIgnored(basePath); // Get files to ignore
-    readDirectory(basePath, ignoreFiles, arrayOfFiles); // Read the directory recursively
+    }));
 
     return arrayOfFiles;
+}
+
+async function getFiles() {
+    const basePath = config.path;
+    const ignoreFiles = await getIgnored(basePath);
+    return await readDirectory(basePath, ignoreFiles);
 }
 
 export { getFiles };
