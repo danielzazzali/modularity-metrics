@@ -1,4 +1,3 @@
-// src/metrics/classesPerFile.js
 const state = {
     results: [],
 };
