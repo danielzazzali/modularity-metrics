@@ -1,5 +1,7 @@
 const state = {
     metricName: "Fan In Fan Out Per Class Method",
+    description: "This metric counts the number of classes that a class method calls (Fan Out) and the number of classes that call a class method (Fan In).",
+    version: "0.0.1",
     results: {},
     currentFile: null,
     currentClass: null,

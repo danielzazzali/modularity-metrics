@@ -2,6 +2,9 @@ import path from "path";
 import { REQUIRE_CALLEE_NAME } from "../constants/constants.js";
 
 const state = {
+    metricName: "Fan In Fan Out Per File",
+    description: "This metric counts the number of files that a file imports (Fan Out) and the number of files that import a file (Fan In).",
+    version: "0.0.1",
     results: {},
     currentFile: null
 };

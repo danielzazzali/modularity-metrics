@@ -5,15 +5,24 @@ class Config {
         }
         Config.instance = this;
 
-        this._path = null;
+        this._codePath = null;
+        this._metricsPath = null;
     }
 
-    get path() {
+    get codePath() {
         return this._path || process.cwd();
     }
 
-    set path(path) {
-        this._path = path;
+    set codePath(codePath) {
+        this._path = codePath;
+    }
+
+    get metricsPath() {
+        return this._metricsPath;
+    }
+
+    set metricsPath(metricsPath) {
+        this._metricsPath = metricsPath;
     }
 }
 

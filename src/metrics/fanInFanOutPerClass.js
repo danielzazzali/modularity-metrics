@@ -1,4 +1,7 @@
 const state = {
+    metricName: "Fan In Fan Out Per Class",
+    description: "This metric counts the number of classes that a class calls (Fan Out) and the number of classes that call a class (Fan In).",
+    version: "0.0.1",
     results: {},
     currentFile: null,
     currentClass: null
@@ -14,49 +17,52 @@ const visitors = {
             state.results[state.currentFile] = {};
         }
         if (!state.results[state.currentFile][className]) {
-            state.results[state.currentFile][className] = { fanIn: [], fanOut: [] };
+            state.results[state.currentFile][className] = new Set();
         }
         state.currentClass = className;
     },
-    NewExpression(pathNode, state) {
-        const instantiatedClass = pathNode.node.callee.name;
+    CallExpression(pathNode, state) {
+        const callee = pathNode.node.callee;
         const currentClass = state.currentClass;
-        if (currentClass && instantiatedClass && currentClass !== instantiatedClass) {
-            if (!state.results[state.currentFile][currentClass].fanOut.includes(instantiatedClass)) {
-                state.results[state.currentFile][currentClass].fanOut.push(instantiatedClass);
-            }
-        }
-    },
-    MemberExpression(pathNode, state) {
-        const objectName = pathNode.node.object.name;
-        const currentClass = state.currentClass;
-        if (currentClass && objectName && currentClass !== objectName) {
-            if (!state.results[state.currentFile][currentClass].fanOut.includes(objectName)) {
-                state.results[state.currentFile][currentClass].fanOut.push(objectName);
+
+        if (!currentClass || !state.results[state.currentFile][currentClass]) return;
+
+        if (callee.type === "MemberExpression") {
+            const calledClass = callee.object.name;
+
+            if (calledClass) {
+                state.results[state.currentFile][currentClass].add(calledClass);
             }
         }
     }
 };
 
 function postProcessing(state) {
-    const fanInMap = {};
+    const fanInOutResults = {};
 
-    for (const [fileName, classes] of Object.entries(state.results)) {
-        for (const [className, { fanOut }] of Object.entries(classes)) {
-            fanOut.forEach((referencedClass) => {
-                if (!fanInMap[referencedClass]) {
-                    fanInMap[referencedClass] = [];
+    for (const [file, classes] of Object.entries(state.results)) {
+        for (const [className, calledClasses] of Object.entries(classes)) {
+            const currentKey = `${className}`;
+
+            if (!fanInOutResults[currentKey]) {
+                fanInOutResults[currentKey] = { fanIn: [], fanOut: [] };
+            }
+
+            for (const calledClass of calledClasses) {
+                fanInOutResults[currentKey].fanOut.push(calledClass);
+
+                if (!fanInOutResults[calledClass]) {
+                    fanInOutResults[calledClass] = { fanIn: [], fanOut: [] };
                 }
-                fanInMap[referencedClass].push(className);
-            });
+
+                if (!fanInOutResults[calledClass].fanIn.includes(currentKey)) {
+                    fanInOutResults[calledClass].fanIn.push(currentKey);
+                }
+            }
         }
     }
 
-    for (const [fileName, classes] of Object.entries(state.results)) {
-        for (const [className, metrics] of Object.entries(classes)) {
-            metrics.fanIn = fanInMap[className] || [];
-        }
-    }
+    state.results = fanInOutResults;
 
     delete state.currentFile;
     delete state.currentClass;

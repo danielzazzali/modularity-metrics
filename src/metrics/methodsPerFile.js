@@ -1,4 +1,7 @@
 const state = {
+    metricName: "Methods Per File",
+    description: "This metric counts the number of methods in each file.",
+    version: "0.0.1",
     results: {},
     currentFile: null
 };

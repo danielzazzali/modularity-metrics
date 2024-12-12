@@ -1,4 +1,7 @@
 const state = {
+    metricName: "Classes Per File",
+    description: "This metric counts the number of classes in each file.",
+    version: "0.0.1",
     results: [],
 };
 

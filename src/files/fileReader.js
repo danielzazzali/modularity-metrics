@@ -1,7 +1,6 @@
 import path from 'path';
 import fs from 'fs/promises';
 import { NODE_MODULES_DIRECTORY } from "../constants/constants.js";
-import { config } from '../config/config.js';
 import { getIgnored, isSupported } from "./ignoreAndSupport.js";
 
 async function readDirectory(directory, ignoreFiles) {
@@ -29,10 +28,9 @@ async function readDirectory(directory, ignoreFiles) {
     return arrayOfFiles;
 }
 
-async function getFiles() {
-    const basePath = config.path;
-    const ignoreFiles = await getIgnored(basePath);
-    return await readDirectory(basePath, ignoreFiles);
+async function getFiles(path) {
+    const ignoreFiles = await getIgnored(path);
+    return await readDirectory(path, ignoreFiles);
 }
 
 export { getFiles };
