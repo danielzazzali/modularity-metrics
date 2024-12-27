@@ -2,7 +2,7 @@ import { config } from './src/config/config.js';
 import { getFiles } from "./src/files/fileReader.js";
 import { getASTs } from "./src/ast/astProcessor.js";
 import { executeMetric } from "./src/ast/executeMetric.js";
-import { MESSAGES, METRICS_PATH } from "./src/constants/constants.js";
+import { MESSAGES } from "./src/constants/constants.js";
 import { importMetric, loadMetrics } from "./src/loader/metricsLoader.js";
 import { fileURLToPath } from "url";
 import path from "path";
