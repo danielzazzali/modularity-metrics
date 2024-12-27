@@ -14,12 +14,12 @@ class Config {
         this._path = codePath || process.cwd();
     }
 
-    get metricsPath() {
-        return this._metricsPath;
+    get customMetricsPath() {
+        return this._customMetricsPath;
     }
 
-    set metricsPath(metricsPath) {
-        this._metricsPath = metricsPath || null;
+    set customMetricsPath(customMetricsPath) {
+        this._customMetricsPath = customMetricsPath || null;
     }
 
     get useDefaultMetrics() {
