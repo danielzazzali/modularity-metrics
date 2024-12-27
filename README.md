@@ -1,4 +1,4 @@
-# Metrics Library
+# Metrics Wizard
 
 This library is designed to calculate various code metrics for JavaScript and TypeScript files. It processes the code files, generates Abstract Syntax Trees (ASTs), and applies different metrics to analyze the code structure.
 

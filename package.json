@@ -1,18 +1,30 @@
 {
-  "name": "metrics",
+  "name": "metrics-wizard",
   "version": "0.0.1",
-  "description": "",
+  "description": "A library designed to calculate various code metrics for JavaScript and TypeScript files. It processes the code files, generates Abstract Syntax Trees (ASTs), and applies different metrics to analyze the code structure.",
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "install-local": "npm install -g"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "bin": {
-    "metrics": "index.js"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danielzazzali/metrics-wizard.git"
   },
-  "private": true,
+  "keywords": [
+    "metrics",
+    "analytics",
+    "wizard",
+    "library",
+    "JavaScript",
+    "TypeScript",
+    "AST"
+  ],
+  "author": "Daniel Zazzali <dazazzali@gmail.com>",
+  "bugs": {
+    "url": "https://github.com/danielzazzali/metrics-wizard/issues"
+  },
+  "homepage": "https://github.com/danielzazzali/metrics-wizard#readme",
   "dependencies": {
     "@babel/parser": "^7.25.6",
     "@babel/traverse": "^7.25.6"
