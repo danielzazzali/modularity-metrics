@@ -1,5 +1,4 @@
 import path from "path";
-import { REQUIRE_CALLEE_NAME } from "../constants/constants.js";
 
 const state = {
     metricName: "Fan In Fan Out Per File",
@@ -21,7 +20,7 @@ const visitors = {
     },
     CallExpression(pathNode, state) {
         if (
-            pathNode.node.callee.name === REQUIRE_CALLEE_NAME &&
+            pathNode.node.callee.name === 'require' &&
             pathNode.node.arguments.length > 0
         ) {
             const requirePath = pathNode.node.arguments[0].value;

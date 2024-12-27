@@ -4,17 +4,14 @@ class Config {
             return Config.instance;
         }
         Config.instance = this;
-
-        this._codePath = null;
-        this._metricsPath = null;
     }
 
     get codePath() {
-        return this._path || process.cwd();
+        return this._path;
     }
 
     set codePath(codePath) {
-        this._path = codePath;
+        this._path = codePath || process.cwd();
     }
 
     get metricsPath() {
@@ -22,7 +19,15 @@ class Config {
     }
 
     set metricsPath(metricsPath) {
-        this._metricsPath = metricsPath;
+        this._metricsPath = metricsPath || null;
+    }
+
+    get useDefaultMetrics() {
+        return this._useDefaultMetrics;
+    }
+
+    set useDefaultMetrics(useDefaultMetrics) {
+        this._useDefaultMetrics = useDefaultMetrics !== false;
     }
 }
 
