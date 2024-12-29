@@ -1,39 +1,48 @@
 const state = {
     metricName: "Classes Per File",
-    description: "This metric counts the number of classes in each file.",
-    version: "0.0.1",
-    results: [],
+    description: "This metric extracts the names of all classes in each file",
+    version: "1.0",
+    result: {},
+    currentFile: null,
+    currentDir: null
 };
 
 const visitors = {
+    Program(pathNode, state) {
+        const filePath = pathNode.parent.loc.filePath;
+        const fileName = pathNode.node.loc.filename;
+        const dirName = filePath.substring(0, filePath.lastIndexOf('/'));
+
+        state.currentFile = fileName;
+        state.currentDir = dirName;
+
+        if (!state.result[state.currentDir]) {
+            state.result[state.currentDir] = {};
+        }
+
+        state.result[state.currentDir][state.currentFile] = {
+            classes: []
+        };
+    },
     ClassDeclaration(path, state) {
         const className = path.node.id.name;
-        state.results.push(className);
+        state.result[state.currentDir][state.currentFile].classes.push(className);
     },
     ClassExpression(path, state) {
-        if (path.node.id) {
-            const className = path.node.id.name;
-            state.results.push(className);
+        const parent = path.parent;
+        let className = 'AnonymousClass';
+
+        if (parent.type === 'VariableDeclarator' && parent.id.type === 'Identifier') {
+            className = parent.id.name;
         }
+
+        state.result[state.currentDir][state.currentFile].classes.push(className);
     }
 };
 
 const postProcessing = (state) => {
-    const classes = {};
-
-    state.results.forEach((className) => {
-        if (!classes[className]) {
-            classes[className] = [];
-        }
-        classes[className].push(className);
-    });
-
-    state.results = Object.keys(classes).map((fileName) => {
-        return {
-            filename: fileName,
-            classes: classes[fileName]
-        };
-    });
+    delete state.currentFile;
+    delete state.currentDir;
 };
 
 export { state, visitors, postProcessing };

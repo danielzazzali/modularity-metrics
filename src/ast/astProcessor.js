@@ -18,6 +18,10 @@ async function getASTs(files) {
 
         // Add the file name to the AST for easier reference
         ast.program.loc.filename = file.fileName;
+        ast.loc.filename = file.fileName;
+
+        // Add the file path to the AST for easier reference
+        ast.loc.filePath = file.filePath;
 
         return ast
     }));
