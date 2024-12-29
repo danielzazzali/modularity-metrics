@@ -37,8 +37,8 @@ The library includes several built-in metrics:
 
 * Classes Per File: Counts the number of classes in each file.
 * Methods Per File: Counts the number of methods in each file.
+* Import/Export Coupling: Counts the number of files that a file imports and the number of files that import a file.
 * Fan In Fan Out Per Class: Counts the number of classes that a class calls (Fan Out) and the number of classes that call a class (Fan In).
-* Fan In Fan Out Per File: Counts the number of files that a file imports (Fan Out) and the number of files that import a file (Fan In).
 * Fan In Fan Out Per Class Method: Counts the number of classes that a class method calls (Fan Out) and the number of classes that call a class method (Fan In).
 
 ## Adding Custom Metrics
@@ -56,7 +56,8 @@ const state = {
     metricName: "Custom Metric",
     description: "Description of the custom metric.",
     version: "0.0.1",
-    results: []
+    results: [],
+    // Define state properties here
 };
 
 const visitors = {
