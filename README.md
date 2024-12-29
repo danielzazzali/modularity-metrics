@@ -7,7 +7,7 @@ This library is designed to calculate various code metrics for JavaScript and Ty
 To install the library, run:
 
 ```sh
-npm install metrics
+npm install metrics-wizard
 ```
 
 ## Usage
@@ -18,9 +18,9 @@ To use the library, import the `calculateMetrics` function and call it with the 
 import { calculateMetrics } from 'metrics';
 
 const results = await calculateMetrics({
-    codePath: './path/to/code',
-    customMetricsPath: './path/to/custom/metrics',
-    useDefaultMetrics: true
+    codePath: './path/to/code', // Required
+    customMetricsPath: './path/to/custom/metrics', // Optional 
+    useDefaultMetrics: true // or false to disable metrics-wizard provided metrics (Optional - Default: true)
 });
 
 console.log(results);
