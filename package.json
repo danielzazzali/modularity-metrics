@@ -1,6 +1,6 @@
 {
   "name": "metrics-wizard",
-  "version": "0.0.4",
+  "version": "0.0.6",
   "description": "A library designed to calculate various code metrics for JavaScript and TypeScript files. It processes the code files, generates Abstract Syntax Trees (ASTs), and applies different metrics to analyze the code structure.",
   "main": "index.js",
   "type": "module",
