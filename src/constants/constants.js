@@ -1,3 +1,4 @@
+export const LIBRARY_NAME = 'metrics-wizard';
 export const IGNORE_FILES_FILENAME = '.metricsignore';
 export const NODE_MODULES_DIRECTORY = 'node_modules';
 
