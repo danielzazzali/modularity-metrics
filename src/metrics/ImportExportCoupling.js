@@ -4,10 +4,11 @@ import fs from 'fs';
 const state = {
     metricName: "Import/Export Coupling",
     description: "This metric counts the number of files that a file imports and the number of files that import a file.",
-    version: "1.0",
+    version: "1.1",
     result: {},
     currentFile: null,
     currentDir: null,
+    unresolved: {},
 };
 
 const visitors = {
@@ -25,7 +26,6 @@ const visitors = {
             };
         }
     },
-
     ImportDeclaration(pathNode, state) {
         const importPath = pathNode.node.source.value;
         const currentDir = state.currentDir;
@@ -41,7 +41,11 @@ const visitors = {
             try {
                 absolutePath = require.resolve(importPath, { paths: [currentDir] });
             } catch (err) {
-                console.error(`Cannot resolve: ${importPath}`);
+                if (!state.unresolved[state.currentFile]) {
+                    state.unresolved[state.currentFile] = [];
+                }
+                state.unresolved[state.currentFile].push(importPath);
+                return;
             }
         }
 
@@ -49,7 +53,6 @@ const visitors = {
             state.result[state.currentFile].imports.push(absolutePath);
         }
     },
-
     CallExpression(pathNode, state) {
         if (
             pathNode.node.callee.name === 'require' &&
@@ -71,7 +74,11 @@ const visitors = {
                 try {
                     absolutePath = require.resolve(requirePath, { paths: [currentDir] });
                 } catch (err) {
-                    console.error(`Cannot resolve: ${requirePath}`);
+                    if (!state.unresolved[state.currentFile]) {
+                        state.unresolved[state.currentFile] = [];
+                    }
+                    state.unresolved[state.currentFile].push(requirePath);
+                    return;
                 }
             }
 
@@ -79,7 +86,7 @@ const visitors = {
                 state.result[state.currentFile].imports.push(absolutePath);
             }
         }
-    },
+    }
 };
 
 function postProcessing(state) {
