@@ -10,7 +10,7 @@ async function executeMetric({ state, visitors, postProcessing, ASTs }) {
             postProcessing(state);
         }
     } catch (error) {
-        state.result = `Error: ${error.message}`;
+        state.result = `Error: ${error.message}\n Stack trace: ${error.stack}`;
     }
     return state;
 }
