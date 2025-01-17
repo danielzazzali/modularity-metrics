@@ -3,54 +3,60 @@ import fs from 'fs';
 
 const state = {
     metricName: "Import/Export Coupling",
-    description: "This metric counts the number of files that a file imports and the number of files that import a file.",
-    version: "1.1",
+    description: "This metric measures how many files a file depends on (imports) and how many files depend on it (are importing it).",
+    version: "1.2",
     result: {},
-    currentFile: null,
+    filePath: null,
     currentDir: null,
     unresolved: {},
 };
 
 const visitors = {
     Program(pathNode, state) {
-        const filePath = pathNode.parent.loc.filePath;
-        const dirName = path.dirname(filePath);
+        state.filePath = pathNode.parent.loc.filePath;
+        state.currentDir = path.dirname(state.filePath);
 
-        state.currentFile = filePath
-        state.currentDir = dirName;
-
-        if (!state.result[filePath]) {
-            state.result[filePath] = {
+        if (!state.result[state.filePath]) {
+            state.result[state.filePath] = {
                 imports: [],
                 exports: [],
             };
         }
     },
     ImportDeclaration(pathNode, state) {
-        const importPath = pathNode.node.source.value;
+        const importedPath = pathNode.node.source.value;
         const currentDir = state.currentDir;
 
-        let absolutePath = null;
+        let importedAbsolutePath = path.resolve(currentDir, importedPath);
 
-        if (importPath.startsWith('.')) {
-            absolutePath = path.resolve(currentDir, importPath);
-            if (!fs.existsSync(absolutePath) && !absolutePath.endsWith('.js')) {
-                absolutePath += '.js';
-            }
-        } else {
-            try {
-                absolutePath = require.resolve(importPath, { paths: [currentDir] });
-            } catch (err) {
-                if (!state.unresolved[state.currentFile]) {
-                    state.unresolved[state.currentFile] = [];
-                }
-                state.unresolved[state.currentFile].push(importPath);
-                return;
+        if (!importedAbsolutePath.endsWith('.ts') && !importedAbsolutePath.endsWith('.js')) {
+            const tsPath = `${importedAbsolutePath}.ts`;
+            const jsPath = `${importedAbsolutePath}.js`;
+
+            if (fs.existsSync(tsPath)) {
+                importedAbsolutePath = tsPath;
+            } else if (fs.existsSync(jsPath)) {
+                importedAbsolutePath = jsPath;
             }
         }
 
-        if (absolutePath) {
-            state.result[state.currentFile].imports.push(absolutePath);
+        if (fs.existsSync(importedAbsolutePath)) {
+            state.result[state.filePath].imports.push(importedAbsolutePath);
+
+            if (!state.result[importedAbsolutePath]) {
+                state.result[importedAbsolutePath] = {
+                    imports: [],
+                    exports: [],
+                };
+            }
+
+            state.result[importedAbsolutePath].exports.push(state.filePath);
+        } else {
+            const relativePath = path.relative(state.currentDir, importedAbsolutePath);
+            if (!state.unresolved[state.filePath]) {
+                state.unresolved[state.filePath] = [];
+            }
+            state.unresolved[state.filePath].push(relativePath);
         }
     },
     CallExpression(pathNode, state) {
@@ -58,53 +64,47 @@ const visitors = {
             pathNode.node.callee.name === 'require' &&
             pathNode.node.arguments.length > 0
         ) {
-            const requirePath = pathNode.node.arguments[0].value;
+            const importedPath = pathNode.node.arguments[0].value;
             const currentDir = state.currentDir;
 
-            let absolutePath = null;
+            let importedAbsolutePath = path.resolve(currentDir, importedPath);
 
-            if (requirePath.startsWith('.')) {
+            if (!importedAbsolutePath.endsWith('.ts') && !importedAbsolutePath.endsWith('.js')) {
+                const tsPath = `${importedAbsolutePath}.ts`;
+                const jsPath = `${importedAbsolutePath}.js`;
 
-                absolutePath = path.resolve(currentDir, requirePath);
-                if (!fs.existsSync(absolutePath) && !absolutePath.endsWith('.js')) {
-                    absolutePath += '.js';
-                }
-            } else {
-
-                try {
-                    absolutePath = require.resolve(requirePath, { paths: [currentDir] });
-                } catch (err) {
-                    if (!state.unresolved[state.currentFile]) {
-                        state.unresolved[state.currentFile] = [];
-                    }
-                    state.unresolved[state.currentFile].push(requirePath);
-                    return;
+                if (fs.existsSync(tsPath)) {
+                    importedAbsolutePath = tsPath;
+                } else if (fs.existsSync(jsPath)) {
+                    importedAbsolutePath = jsPath;
                 }
             }
 
-            if (absolutePath) {
-                state.result[state.currentFile].imports.push(absolutePath);
+            if (fs.existsSync(importedAbsolutePath)) {
+                state.result[state.filePath].imports.push(importedAbsolutePath);
+
+                if (!state.result[importedAbsolutePath]) {
+                    state.result[importedAbsolutePath] = {
+                        imports: [],
+                        exports: [],
+                    };
+                }
+
+                state.result[importedAbsolutePath].exports.push(state.filePath);
+            } else {
+                const relativePath = path.relative(state.currentDir, importedAbsolutePath);
+                if (!state.unresolved[state.filePath]) {
+                    state.unresolved[state.filePath] = [];
+                }
+                state.unresolved[state.filePath].push(relativePath);
             }
         }
     }
 };
 
 function postProcessing(state) {
-    for (const [file, { imports }] of Object.entries(state.result)) {
-        for (const importedFile of imports) {
-            if (!state.result[importedFile]) {
-                state.result[importedFile] = {
-                    imports: [],
-                    exports: [],
-                };
-            }
-
-            state.result[importedFile].exports.push(file);
-        }
-    }
-
-    delete state.currentFile;
     delete state.currentDir;
+    delete state.filePath;
 }
 
 export { state, visitors, postProcessing };

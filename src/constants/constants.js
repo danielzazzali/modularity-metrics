@@ -16,7 +16,7 @@ export const BABEL_PARSER_OPTIONS = {
     ]
 };
 
-export const METRICS_PATH = 'src/metrics';
+export const METRICS_PATH = 'metrics';
 
 export const MESSAGES = {
     ERRORS: {
