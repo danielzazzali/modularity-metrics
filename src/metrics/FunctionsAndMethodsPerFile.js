@@ -49,6 +49,20 @@ const visitors = {
             const objectName = grandparent.node.id.name;
             const functionSignature = `${isAsync}${isGenerator}${objectName}.${name}(${params})`;
             state.result[state.filePath].push(functionSignature)
+        } else if (pathNode.parent.type === 'ClassProperty') {
+            const parent = pathNode.findParent((p) => p.isClassProperty());
+            let grandparent;
+            if (parent) {
+                grandparent = parent.findParent((p) => p.isClassDeclaration());
+            }
+            isAsync = pathNode.node.async ? 'async ' : '';
+            isGenerator = pathNode.node.generator ? '* ' : ''
+            const isStatic = pathNode.parent.static ? 'static ' : ''
+            const methodName = pathNode.parent.key.name;
+            const name = pathNode.parent.computed ? `[${methodName}]` : methodName
+            const className = grandparent.node.id.name;
+            const functionSignature = `${isStatic}${isAsync}${isGenerator}${className}.${name}(${params})`;
+            state.result[state.filePath].push(functionSignature)
         } else {
             const functionName = '{AnonymousFunction}';
             const functionSignature = `${isAsync}function${isGenerator} ${functionName}(${params})`;
@@ -56,12 +70,26 @@ const visitors = {
         }
     },
     ArrowFunctionExpression(pathNode, state) {
-        const isAsync = pathNode.node.async ? 'async ' : '';
-        const isGenerator = pathNode.node.generator ? '*' : ''
+        let isAsync = pathNode.node.async ? 'async ' : '';
+        let isGenerator = pathNode.node.generator ? '*' : ''
+        const params = pathNode.node.params.map(param => param.name).join(', ');
         if (pathNode.parent.type === 'VariableDeclarator' && pathNode.parent.id && pathNode.parent.id.name) {
             const functionName = pathNode.parent.id.name;
-            const params = pathNode.node.params.map(param => param.name).join(', ');
             const functionSignature = `${isAsync}function${isGenerator} ${functionName}(${params}) =>`;
+            state.result[state.filePath].push(functionSignature)
+        } else if (pathNode.parent.type === 'ClassProperty') {
+            const parent = pathNode.findParent((p) => p.isClassProperty());
+            let grandparent;
+            if (parent) {
+                grandparent = parent.findParent((p) => p.isClassDeclaration());
+            }
+            isAsync = pathNode.node.async ? 'async ' : '';
+            isGenerator = pathNode.node.generator ? '* ' : ''
+            const isStatic = pathNode.parent.static ? 'static ' : ''
+            const methodName = pathNode.parent.key.name;
+            const name = pathNode.parent.computed ? `[${methodName}]` : methodName
+            const className = grandparent.node.id.name;
+            const functionSignature = `${isStatic}${isAsync}${isGenerator}${className}.${name}(${params})`;
             state.result[state.filePath].push(functionSignature)
         }
     },
@@ -79,6 +107,24 @@ const visitors = {
             const objectName = grandparent.node.id.name;
             const params = pathNode.node.params.map(param => param.name).join(', ');
             const functionSignature = `${isAsync}${isGenerator}${objectName}.${name}(${params})`;
+            state.result[state.filePath].push(functionSignature)
+        }
+    },
+    ClassMethod(pathNode, state) {
+        const parent = pathNode.findParent((p) => p.isClassBody());
+        let grandparent;
+        if (parent) {
+            grandparent = parent.findParent((p) => p.isClassDeclaration());
+        }
+        if(grandparent) {
+            const isStatic = pathNode.node.static ? 'static ' : ''
+            const isAsync = pathNode.node.async ? 'async ' : '';
+            const isGenerator = pathNode.node.generator ? '* ' : ''
+            const methodName = pathNode.node.key.name;
+            const name = pathNode.node.computed ? `[${methodName}]` : methodName
+            const className = grandparent.node.id.name;
+            const params = pathNode.node.params.map(param => param.name).join(', ');
+            const functionSignature = `${isStatic}${isAsync}${isGenerator}${className}.${name}(${params})`;
             state.result[state.filePath].push(functionSignature)
         }
     }
