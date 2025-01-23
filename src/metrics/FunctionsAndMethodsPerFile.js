@@ -3,7 +3,7 @@ import generate from "@babel/generator";
 const state = {
     metricName: "Functions And Methods Per File",
     description: "This metric extracts the signature of all functions and methods in a file.",
-    version: "1.2",
+    version: "1.3",
     result: {},
     filePath: null
 };
