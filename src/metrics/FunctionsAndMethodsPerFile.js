@@ -1,3 +1,5 @@
+import generate from "@babel/generator";
+
 const state = {
     metricName: "Functions And Methods Per File",
     description: "This metric extracts the signature of all functions and methods in a file.",
@@ -15,16 +17,33 @@ const visitors = {
     },
     FunctionDeclaration(pathNode, state) {
         const isAsync = pathNode.node.async ? 'async ' : '';
-        const isGenerator = pathNode.node.generator ? '*' : ''
+        const isGenerator = pathNode.node.generator ? '*' : '';
         const functionName = pathNode.node.id.name;
-        const params = pathNode.node.params.map(param => param.name).join(', ');
+
+        const params = pathNode.node.params.map(param => {
+            let paramName = param.name;
+            if (param.typeAnnotation) {
+                const typeCode = generate.default(param.typeAnnotation.typeAnnotation).code;
+                paramName = `${param.name}: ${typeCode}`;
+            }
+            return paramName;
+        }).join(', ');
+
         const functionSignature = `${isAsync}function${isGenerator} ${functionName}(${params})`;
-        state.result[state.filePath].push(functionSignature)
+        state.result[state.filePath].push(functionSignature);
     },
     FunctionExpression(pathNode, state) {
         let isAsync = pathNode.node.async ? 'async ' : '';
         let isGenerator = pathNode.node.generator ? '*' : ''
-        const params = pathNode.node.params.map(param => param.name).join(', ');
+        const params = pathNode.node.params.map(param => {
+            let paramName = param.name;
+            if (param.typeAnnotation) {
+                const typeCode = generate.default(param.typeAnnotation.typeAnnotation).code;
+                paramName = `${param.name}: ${typeCode}`;
+            }
+            return paramName;
+        }).join(', ');
+
         if (pathNode.parent.type === 'VariableDeclarator' && pathNode.parent.id && pathNode.parent.id.name) {
             const functionName = pathNode.parent.id.name;
             const functionSignature = `${isAsync}function${isGenerator} ${functionName}(${params})`;
@@ -72,7 +91,14 @@ const visitors = {
     ArrowFunctionExpression(pathNode, state) {
         let isAsync = pathNode.node.async ? 'async ' : '';
         let isGenerator = pathNode.node.generator ? '*' : ''
-        const params = pathNode.node.params.map(param => param.name).join(', ');
+        const params = pathNode.node.params.map(param => {
+            let paramName = param.name;
+            if (param.typeAnnotation) {
+                const typeCode = generate.default(param.typeAnnotation.typeAnnotation).code;
+                paramName = `${param.name}: ${typeCode}`;
+            }
+            return paramName;
+        }).join(', ');
         if (pathNode.parent.type === 'VariableDeclarator' && pathNode.parent.id && pathNode.parent.id.name) {
             const functionName = pathNode.parent.id.name;
             const functionSignature = `${isAsync}function${isGenerator} ${functionName}(${params}) =>`;
@@ -105,7 +131,14 @@ const visitors = {
             const methodName = pathNode.node.key.name;
             const name = pathNode.node.computed ? `[${methodName}]` : methodName
             const objectName = grandparent.node.id.name;
-            const params = pathNode.node.params.map(param => param.name).join(', ');
+            const params = pathNode.node.params.map(param => {
+                let paramName = param.name;
+                if (param.typeAnnotation) {
+                    const typeCode = generate.default(param.typeAnnotation.typeAnnotation).code;
+                    paramName = `${param.name}: ${typeCode}`;
+                }
+                return paramName;
+            }).join(', ');
             const functionSignature = `${isAsync}${isGenerator}${objectName}.${name}(${params})`;
             state.result[state.filePath].push(functionSignature)
         }
@@ -123,7 +156,14 @@ const visitors = {
             const methodName = pathNode.node.key.name;
             const name = pathNode.node.computed ? `[${methodName}]` : methodName
             const className = grandparent.node.id.name;
-            const params = pathNode.node.params.map(param => param.name).join(', ');
+            const params = pathNode.node.params.map(param => {
+                let paramName = param.name;
+                if (param.typeAnnotation) {
+                    const typeCode = generate.default(param.typeAnnotation.typeAnnotation).code;
+                    paramName = `${param.name}: ${typeCode}`;
+                }
+                return paramName;
+            }).join(', ');
             const functionSignature = `${isStatic}${isAsync}${isGenerator}${className}.${name}(${params})`;
             state.result[state.filePath].push(functionSignature)
         }
