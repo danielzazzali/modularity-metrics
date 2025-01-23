@@ -1,0 +1,37 @@
+{
+  "name": "modularity-metrics",
+  "version": "0.1.0",
+  "description": "A library designed to calculate various code metrics for JavaScript and TypeScript files. It processes the code files, generates Abstract Syntax Trees (ASTs), and applies different metrics to analyze the code structure.",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danielzazzali/modularity-metrics.git"
+  },
+  "keywords": [
+    "modular",
+    "metrics",
+    "code-analysis",
+    "JavaScript",
+    "TypeScript",
+    "AST",
+    "modularity",
+    "code-quality",
+    "maintenance"
+  ],
+  "author": "Daniel Zazzali <dazazzali@gmail.com>",
+  "bugs": {
+    "url": "https://github.com/danielzazzali/modularity-metrics/issues"
+  },
+  "homepage": "https://github.com/danielzazzali/modularity-metrics#readme",
+  "dependencies": {
+    "@babel/parser": "^7.25.6",
+    "@babel/traverse": "^7.25.6"
+  },
+  "devDependencies": {
+    "@babel/generator": "^7.26.5"
+  }
+}
