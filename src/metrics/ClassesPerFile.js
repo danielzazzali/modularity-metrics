@@ -1,7 +1,7 @@
 const state = {
     metricName: "Classes Per File",
     description: "Extracts the names of all classes in each file",
-    version: "1.1",
+    version: "1.2",
     result: {},
     filePath: null
 };
@@ -18,11 +18,9 @@ const visitors = {
         state.result[state.filePath].push(className);
     },
     ClassExpression(pathNode, state) {
-        const parentNode = pathNode.parent
-        let className = 'AnonymousClass';
-
-        if(parentNode.type === 'VariableDeclarator' && parentNode.id.type === 'Identifier') {
-            className = parentNode.id.name;
+        let className = '{AnonymousClass}';
+        if(pathNode.node.id && pathNode.node.id.name) {
+            className = pathNode.node.id.name;
         }
 
         state.result[state.filePath].push(className);
