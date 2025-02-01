@@ -11,7 +11,7 @@ const state = {
     unresolved: {},
 };
 
-const visitors = {
+const visitors = [{
     Program(pathNode, state) {
         state.filePath = pathNode.parent.loc.filePath;
         state.currentDir = path.dirname(state.filePath);
@@ -100,7 +100,7 @@ const visitors = {
             }
         }
     }
-};
+}];
 
 function postProcessing(state) {
     delete state.currentDir;

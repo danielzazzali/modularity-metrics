@@ -8,7 +8,7 @@ const state = {
     currentMethod: null
 };
 
-const visitors = {
+const visitors = [{
     Program(pathNode, state) {
         state.currentFile = pathNode.node.loc.filename;
     },
@@ -74,7 +74,7 @@ const visitors = {
             }
         }
     }
-};
+}];
 
 function postProcessing(state) {
     const fanInOutResults = {};

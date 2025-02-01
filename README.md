@@ -46,7 +46,7 @@ The library includes several built-in metrics:
 To add custom metrics, create a new module in the custom metrics directory and export the following:
 
 * `state`: The initial state of the metric.
-* `visitors`: The visitors to traverse the AST.
+* `visitors`: An array of grouped visitors to traverse the AST, from first to last in execution order.
 * `postProcessing` (optional): A function to perform post-processing on the collected data.
 
 Example:
@@ -60,9 +60,9 @@ const state = {
     // Define state properties here
 };
 
-const visitors = {
+const visitors = [{
     // Define visitors here
-};
+}];
 
 function postProcessing(state) {
     // Perform post-processing here

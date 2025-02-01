@@ -8,7 +8,7 @@ const state = {
     filePath: null
 };
 
-const visitors = {
+const visitors = [{
     Program(pathNode, state) {
         state.filePath = pathNode.parent.loc.filePath;
         if (!state.result[state.filePath]) {
@@ -168,7 +168,7 @@ const visitors = {
             state.result[state.filePath].push(functionSignature)
         }
     }
-};
+}];
 
 
 function postProcessing(state) {
