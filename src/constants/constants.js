@@ -10,7 +10,7 @@ export const TS_EXTENSION = '.ts';
 export const LINE_BREAK = '\n';
 
 export const BABEL_PARSER_OPTIONS = {
-    sourceType: 'module',
+    sourceType: 'unambiguous',
     plugins: [
         'typescript'
     ]
