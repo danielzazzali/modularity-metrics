@@ -8,7 +8,6 @@
 const state = {
     metricName: "Classes Per File",
     description: "Analyzes class distribution without duplicate entries",
-    version: "2.5",
     result: {
         /**
          * @typedef {Object} FileAnalysis
