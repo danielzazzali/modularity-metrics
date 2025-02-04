@@ -1,7 +1,7 @@
 /**
  * Function/Method Analysis Metric
  *
- * Distinguishes between standalone functions and class/object methods
+ * Collect standalone functions and class/object methods
  * with detailed context-aware metadata
  * @module FunctionMethodAnalysis
  */
@@ -9,8 +9,8 @@
 import generate from "@babel/generator";
 
 const state = {
-    metricName: "Function vs Method Analysis",
-    description: "Differentiates standalone functions from class/object methods",
+    metricName: "Function/Method Analysis",
+    description: "Collect standalone functions and class/object methods",
     result: {
         /**
          * @typedef {Object} FileAnalysis
