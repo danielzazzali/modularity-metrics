@@ -2,9 +2,9 @@ import traverse from "@babel/traverse";
 
 async function executeMetric({ state, visitors, postProcessing, ASTs }) {
     try {
-        for (const ast of ASTs) {
-            for (const group of visitors) {
-                traverse.default(ast, group, null, state);
+        for (let i = 0; i < visitors.length; i++) {
+            for (const ast of ASTs) {
+                traverse.default(ast, visitors[i], null, state);
             }
         }
 

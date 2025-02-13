@@ -186,26 +186,3 @@ const postProcessing = (state) => {
 };
 
 export { state, visitors, postProcessing };
-
-// -------------------------------
-// Architectural Overview
-// -------------------------------
-//
-// Data Flow:
-// 1. AST Traversal → Syntax-specific Import Detection
-// 2. Path Resolution → Extension Handling
-// 3. Bidirectional Relationship Registration
-// 4. Unresolved Import Tracking
-//
-// Key Features:
-// - Full TypeScript syntax support
-// - Hybrid module system handling
-// - Extension resolution (.ts, .tsx, .js, .jsx)
-// - Original path formatting preservation
-// - Duplicate prevention
-//
-// Detection Coverage:
-// - ES6 static/dynamic imports
-// - CommonJS require()
-// - TypeScript import equals
-// - Conditional imports

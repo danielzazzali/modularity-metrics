@@ -213,10 +213,14 @@ function generateMethodSignature(path, parent) {
 function getParentContext(path) {
     const classParent = path.findParent(p => p.isClassDeclaration());
     if (classParent) {
+        const className = classParent.node.id ? classParent.node.id.name : '{anonymous}';
+        const memberParent = path.findParent(p => p.isClassMethod() || p.isClassProperty());
+        const isStatic = memberParent ? memberParent.node.static : false;
+
         return {
             type: 'class',
-            name: classParent.node.id.name,
-            isStatic: path.parent.static
+            name: className,
+            isStatic: isStatic
         };
     }
 
@@ -354,32 +358,3 @@ const postProcessing = (state) => {
 };
 
 export { state, visitors, postProcessing };
-
-// -------------------------------
-// Architectural Documentation
-// -------------------------------
-//
-// Key Distinctions:
-// 1. Functions: Defined in file scope (not nested in classes/objects)
-//    - FunctionDeclaration
-//    - FunctionExpression (when not in class/object)
-//    - ArrowFunctionExpression (when not in class/object)
-//
-// 2. Methods: Defined within class/object contexts
-//    - ClassMethod
-//    - ObjectMethod
-//    - Arrow functions inside class properties
-//
-// Data Enrichment:
-// - Methods track parent context (class/object name)
-// - Static method detection for classes
-// - Signature generation with context awareness
-//
-// Statistics Tracking:
-// - Total functions vs methods
-// - Class vs object method counts
-// - Async/generator usage
-//
-// Example Output:
-// Function: "async function fetchData(userId)"
-// Method: "static User.validate(email)"

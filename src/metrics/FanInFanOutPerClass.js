@@ -1,71 +1,133 @@
 const state = {
-    metricName: "Fan In Fan Out Per Class",
-    description: "This metric counts the number of classes that a class calls (Fan Out) and the number of classes that call a class (Fan In).",
-    version: "0.0.1",
-    results: {},
-    currentFile: null,
-    currentClass: null
+    metricName: "Class Coupling Analysis",
+    description: "Calculates fan-in and fan-out dependencies between classes",
+    version: "1.0",
+    result: {},
+    classesMap: {},
+    currentFile: null
 };
 
-const visitors = [{
-    Program(pathNode, state) {
-        state.currentFile = pathNode.node.loc.filename;
+const visitors = [
+    {
+        Program(path, state) {
+            state.currentFile = path.parent.loc?.filePath || 'unknown';
+
+            if (!state.result[state.currentFile]) {
+                state.result[state.currentFile] = {
+                    classes: {}
+                };
+            }
+        },
+
+        ClassDeclaration(path, state) {
+            const className = getClassName(path);
+            if (className && state.currentFile) {
+                state.result[state.currentFile].classes[className] = {
+                    fanIn: [],
+                    fanOut: [],
+                };
+
+                state.classesMap[className] = state.currentFile;
+            }
+        },
+
+        ClassExpression(path, state) {
+            const className = getClassName(path);
+            if (className && state.currentFile) {
+                state.result[state.currentFile].classes[className] = {
+                    fanIn: [],
+                    fanOut: [],
+                };
+
+                state.classesMap[className] = state.currentFile;
+            }
+        }
     },
-    ClassDeclaration(pathNode, state) {
-        const className = pathNode.node.id.name;
-        if (!state.results[state.currentFile]) {
-            state.results[state.currentFile] = {};
-        }
-        if (!state.results[state.currentFile][className]) {
-            state.results[state.currentFile][className] = new Set();
-        }
-        state.currentClass = className;
-    },
-    CallExpression(pathNode, state) {
-        const callee = pathNode.node.callee;
-        const currentClass = state.currentClass;
+    {
+        Program(path, state) {
+            state.currentFile = path.parent.loc?.filePath || 'unknown';
+        },
 
-        if (!currentClass || !state.results[state.currentFile][currentClass]) return;
+        ClassBody(path, state) {
+            const parent = path.findParent(p =>
+                p.isClassDeclaration ||
+                p.isClassExpression()
+            );
 
-        if (callee.type === "MemberExpression") {
-            const calledClass = callee.object.name;
+            const caller = getClassName(parent)
 
-            if (calledClass) {
-                state.results[state.currentFile][currentClass].add(calledClass);
-            }
-        }
-    }
-}];
+            const handler = {
+                NewExpression(node) {
+                    const callee = node.node.callee.name;
+                    state.result[state.currentFile].classes[caller].fanOut.push(callee);
 
-function postProcessing(state) {
-    const fanInOutResults = {};
-
-    for (const [file, classes] of Object.entries(state.results)) {
-        for (const [className, calledClasses] of Object.entries(classes)) {
-            const currentKey = `${className}`;
-
-            if (!fanInOutResults[currentKey]) {
-                fanInOutResults[currentKey] = { fanIn: [], fanOut: [] };
-            }
-
-            for (const calledClass of calledClasses) {
-                fanInOutResults[currentKey].fanOut.push(calledClass);
-
-                if (!fanInOutResults[calledClass]) {
-                    fanInOutResults[calledClass] = { fanIn: [], fanOut: [] };
-                }
-
-                if (!fanInOutResults[calledClass].fanIn.includes(currentKey)) {
-                    fanInOutResults[calledClass].fanIn.push(currentKey);
+                    Object.keys(state.result).forEach(file => {
+                        Object.keys(state.result[file].classes).forEach(className => {
+                            if (className === callee){
+                                state.result[file].classes[callee].fanIn.push(caller);
+                            }
+                        });
+                    });
                 }
             }
-        }
+
+            path.traverse(handler)
+        },
     }
+];
 
-    state.results = fanInOutResults;
 
-    delete state.currentFile;
-    delete state.currentClass;
+function addFanIn(data, caller, callee) {
+    Object.values(data).forEach(file => {
+        if (file.classes && file.classes[callee]) {
+            file.classes[callee].fanIn.push(caller);
+        }
+    });
 }
+
+/**
+ * Resolves class name from AST context
+ * @param {Object} path - AST path
+ * @returns {string}
+ */
+function getClassName(path) {
+    // Named class detection
+    if (path.node.id) return path.node.id.name;
+
+    const parent = path.parentPath;
+
+    // Variable declaration: const MyClass = class {}
+    if (parent.isVariableDeclarator()) {
+        return parent.node.id?.name || '{AnonymousClass}';
+    }
+
+    // Assignment pattern: MyClass = class {}
+    if (parent.isAssignmentExpression()) {
+        return parent.node.left?.name || '{AnonymousClass}';
+    }
+
+    // Object property: { MyClass: class {} }
+    if (parent.isObjectProperty()) {
+        return parent.node.key.name || '{AnonymousClass}';
+    }
+
+    // Default export detection
+    if (checkDefaultExport(path)) {
+        return 'default';
+    }
+
+    // Fallback for anonymous classes
+    return '{AnonymousClass}';
+}
+
+function checkDefaultExport(path) {
+    return Boolean(path.findParent(p =>
+        p.isExportDefaultDeclaration()
+    ));
+}
+
+const postProcessing = (state) => {
+    delete state.currentFile;
+};
 
 export { state, visitors, postProcessing };
