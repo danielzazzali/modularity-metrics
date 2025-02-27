@@ -12,7 +12,8 @@ export const LINE_BREAK = '\n';
 export const BABEL_PARSER_OPTIONS = {
     sourceType: 'unambiguous',
     plugins: [
-        'typescript'
+        'typescript',
+        "jsx"
     ]
 };
 

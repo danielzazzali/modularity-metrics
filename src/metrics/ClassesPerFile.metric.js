@@ -199,22 +199,3 @@ const postProcessing = (state) => {
 };
 
 export { state, visitors, postProcessing };
-
-// -------------------------------
-// Architectural Documentation
-// -------------------------------
-//
-// Data Flow:
-// 1. AST Traversal → Class Detection → Metadata Extraction
-// 2. File-level Aggregation → Global Registry Update
-// 3. Statistical Analysis → Final Report
-//
-// Dynamic Class Handling:
-// - Uses /* class-metric-name: CustomName */ annotations
-// - Looks for leading comments on parent nodes
-// - Overrides automatic name detection when found
-//
-// Limitations:
-// - Dynamic classes require manual annotations
-// - No runtime evaluation of code
-// - Limited to static analysis capabilities

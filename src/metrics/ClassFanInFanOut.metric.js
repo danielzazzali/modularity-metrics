@@ -4,7 +4,8 @@ const state = {
     version: "1.0",
     result: {},
     classesMap: {},
-    currentFile: null
+    currentFile: null,
+    instanceMap: {}
 };
 
 const visitors = [
@@ -41,6 +42,21 @@ const visitors = [
 
                 state.classesMap[className] = state.currentFile;
             }
+        },
+
+        AssignmentExpression(path, state) {
+            // Detecta asignaciones de la forma: this.parkedCar = new Car();
+            if (
+                path.get('left').isMemberExpression() &&
+                path.get('left.object').isThisExpression() &&
+                path.get('right').isNewExpression()
+            ) {
+                const propertyName = path.get('left.property').node.name;
+                const callee = path.get('right.callee');
+                const className = callee.node.name;
+                // Registra la asociación en state.instanceMap
+                state.instanceMap[propertyName] = className;
+            }
         }
     },
     {
@@ -57,21 +73,42 @@ const visitors = [
             const caller = getClassName(parent)
 
             const handler = {
-                NewExpression(node) {
-                    const callee = node.node.callee.name;
-                    state.result[state.currentFile].classes[caller].fanOut.push(callee);
+                // TODO: Add examples
+                Identifier(node) {
+                    const identifierName = node.node.name;
 
                     Object.keys(state.result).forEach(file => {
                         Object.keys(state.result[file].classes).forEach(className => {
-                            if (className === callee){
-                                state.result[file].classes[callee].fanIn.push(caller);
+                            if (className === identifierName) {
+                                state.result[state.currentFile].classes[caller].fanOut.push(identifierName);
+                                state.result[file].classes[identifierName].fanIn.push(caller);
                             }
                         });
                     });
+                },
+
+                CallExpression(path, state) {
+                    const callee = path.get('callee');
+                    if (
+                        callee.isMemberExpression() &&
+                        callee.get('object').isMemberExpression() &&
+                        callee.get('object.object').isThisExpression()
+                    ) {
+                        const propertyName = callee.get('object.property').node.name;
+                        if (state.instanceMap && state.instanceMap[propertyName]) {
+                            const className = state.instanceMap[propertyName];
+                            // Se registra el uso del alias como si se hubiera llamado directamente a la clase
+                            state.result[state.currentFile].classes[caller].fanOut.push(className);
+                            const targetFile = state.classesMap[className];
+                            if (targetFile) {
+                                state.result[targetFile].classes[className].fanIn.push(caller);
+                            }
+                        }
+                    }
                 }
             }
 
-            path.traverse(handler)
+            path.traverse(handler, state)
         },
     }
 ];
