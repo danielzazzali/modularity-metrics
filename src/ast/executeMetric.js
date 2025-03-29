@@ -1,10 +1,15 @@
 import traverse from "@babel/traverse";
+import {MESSAGES} from "../constants/constants.js";
 
 async function executeMetric({ state, visitors, postProcessing, ASTs }) {
     try {
         for (let i = 0; i < visitors.length; i++) {
             for (const ast of ASTs) {
-                traverse.default(ast, visitors[i], null, state);
+                try {
+                    traverse.default(ast, visitors[i], null, state);
+                } catch (error) {
+                    console.error(`${MESSAGES.ERRORS.ERROR_TRAVERSING_AST} ${ast.loc.filePath}`)
+                }
             }
         }
 

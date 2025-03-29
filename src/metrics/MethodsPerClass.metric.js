@@ -1,13 +1,11 @@
 import generate from "@babel/generator";
 
 const state = {
-    metricName: "Function/Method Analysis",
-    description: "Collect standalone functions and class/object methods",
+    metricName: "Method Analysis",
+    description: "Collect class/object methods",
     result: {
         files: {},
-
         statistics: {
-            totalFunctions: 0,
             totalMethods: 0,
             classMethods: 0,
             objectMethods: 0,
@@ -18,29 +16,11 @@ const state = {
     currentFile: null
 };
 
-
 const visitors = [
     {
         Program(path) {
             state.currentFile = path.parent.loc.filePath;
             initFileEntry();
-        },
-
-        // Standalone Functions
-        FunctionDeclaration(path) {
-            handleFunction(path, 'declaration');
-        },
-
-        FunctionExpression(path) {
-            if (!isMethodContext(path)) {
-                handleFunction(path, 'expression');
-            }
-        },
-
-        ArrowFunctionExpression(path) {
-            if (!isMethodContext(path)) {
-                handleFunction(path, 'arrow');
-            }
         },
 
         // Class Methods
@@ -72,31 +52,26 @@ const visitors = [
     }
 ];
 
+// Helpers
 function initFileEntry() {
     if (!state.result.files[state.currentFile]) {
+
         state.result.files[state.currentFile] = {
-            functions: [],
-            methods: []
+            classes: {}
         };
     }
 }
 
-function isMethodContext(path) {
-    return path.findParent(p =>
-        p.isClassBody() ||
-        p.isObjectExpression()
-    );
-}
+function addMethodToFileGroup(metadata) {
+    const parentName = metadata.parent;
+    const fileEntry = state.result.files[state.currentFile];
+    if (!fileEntry.classes[parentName]) {
+        fileEntry.classes[parentName] = [];
+    }
 
-function handleFunction(path, type) {
-    const metadata = {
-        ...baseMetadata(path, 'function'),
-        type,
-        signature: generateFunctionSignature(path, type)
-    };
+    delete metadata["loc"];
 
-    state.result.files[state.currentFile].functions.push(metadata);
-    updateStatistics({ type: 'function', metadata });
+    fileEntry.classes[parentName].push(metadata);
 }
 
 function handleMethod(path, contextType) {
@@ -109,7 +84,7 @@ function handleMethod(path, contextType) {
         signature: generateMethodSignature(path, parent)
     };
 
-    state.result.files[state.currentFile].methods.push(metadata);
+    addMethodToFileGroup(metadata);
     updateStatistics({ type: 'method', metadata, contextType });
 }
 
@@ -142,17 +117,6 @@ function extractParams(params) {
             null,
         hasDefault: param.type === 'AssignmentPattern'
     }));
-}
-
-function generateFunctionSignature(path, type) {
-    const { isAsync, isGenerator, name } = baseMetadata(path, 'function');
-    return [
-        isAsync && 'async',
-        type === 'arrow' ? null : 'function',
-        isGenerator && '*',
-        name,
-        `(${extractParams(path.node.params).map(p => p.name).join(', ')})`
-    ].filter(Boolean).join(' ');
 }
 
 function generateMethodSignature(path, parent) {
@@ -213,7 +177,7 @@ function handleClassFieldMethod(path) {
         type: methodNode.value.type === 'ArrowFunctionExpression' ? 'arrow' : 'function'
     };
 
-    state.result.files[state.currentFile].methods.push(metadata);
+    addMethodToFileGroup(metadata);
     updateStatistics({
         type: 'method',
         metadata,
@@ -262,7 +226,7 @@ function handleObjectMethod(path) {
         type: 'function'
     };
 
-    state.result.files[state.currentFile].methods.push(metadata);
+    addMethodToFileGroup(metadata);
     updateStatistics({
         type: 'method',
         metadata,
@@ -299,9 +263,9 @@ function updateStatistics({ type, metadata, contextType }) {
         state.result.statistics.totalFunctions++;
     } else {
         state.result.statistics.totalMethods++;
-        contextType === 'class' ?
-            state.result.statistics.classMethods++ :
-            state.result.statistics.objectMethods++;
+        contextType === 'class'
+            ? state.result.statistics.classMethods++
+            : state.result.statistics.objectMethods++;
     }
 
     if (metadata.isAsync) state.result.statistics.asyncCount++;

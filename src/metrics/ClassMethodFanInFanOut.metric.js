@@ -1,5 +1,3 @@
-import generate from "@babel/generator";
-
 const state = {
     result: {
         statistics: {

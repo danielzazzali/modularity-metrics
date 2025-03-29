@@ -1,23 +1,8 @@
-/**
- * Classes Per File Metric Module
- *
- * Tracks class distribution across files with enhanced anonymous class handling
- * @module ClassesPerFile
- */
-
 const state = {
     metricName: "Classes Per File",
     description: "Analyzes class distribution without duplicate entries",
     result: {
-        /**
-         * @typedef {Object} FileAnalysis
-         * @property {Array<ClassEntry>} classes - Class entries in file
-         * @property {number} total - Total class count
-         * @property {number} exported - Exported classes count
-         * @property {number} anonymous - Anonymous classes count
-         */
-        files: {},  // { [filePath]: FileAnalysis }
-
+        files: {},
         statistics: {
             totalClasses: 0,
             anonymousClasses: 0,
@@ -28,46 +13,23 @@ const state = {
     currentFile: null
 };
 
-/**
- * AST visitors for class detection
- * @type {Array<Object>}
- */
 const visitors = [
     {
-        /**
-         * Initializes file context on program entry
-         * @param {Object} path - AST path
-         * @param {Object} state - Metric state
-         */
         Program(path, state) {
             state.currentFile = path.parent.loc?.filePath || null;
             if (state.currentFile) initFileEntry(state);
         },
 
-        /**
-         * Processes class declarations
-         * @param {Object} path - ClassDeclaration AST path
-         */
         ClassDeclaration(path) {
             processClass(path, 'declaration', state);
         },
 
-        /**
-         * Processes class expressions
-         * @param {Object} path - ClassExpression AST path
-         */
         ClassExpression(path) {
             processClass(path, 'expression', state);
         }
     }
 ];
 
-// Core Processing Functions
-
-/**
- * Initializes file entry in results
- * @param {Object} state - Metric state
- */
 function initFileEntry(state) {
     if (!state.result.files[state.currentFile]) {
         state.result.files[state.currentFile] = {
@@ -79,12 +41,6 @@ function initFileEntry(state) {
     }
 }
 
-/**
- * Main class processing handler
- * @param {Object} path - AST path
- * @param {'declaration'|'expression'} type - Class type
- * @param {Object} state - Metric state
- */
 function processClass(path, type, state) {
     if (!state.currentFile) return;
 
@@ -101,13 +57,6 @@ function processClass(path, type, state) {
     if (classData.isExported) state.result.statistics.exportedClasses++;
 }
 
-/**
- * Builds class metadata object
- * @param {Object} path - AST path
- * @param {string} type - Class type
- * @param {string} filePath - Source file path
- * @returns {ClassEntry}
- */
 function buildClassData(path, type, filePath) {
     const node = path.node;
 
@@ -126,12 +75,6 @@ function buildClassData(path, type, filePath) {
     };
 }
 
-/**
- * Resolves class name from AST context
- * @param {Object} node - Class node
- * @param {Object} path - AST path
- * @returns {string}
- */
 function getClassName(node, path) {
     // Named class detection
     if (node.id) return node.id.name;
@@ -162,11 +105,6 @@ function getClassName(node, path) {
     return '{AnonymousClass}';
 }
 
-/**
- * Checks export status of class
- * @param {Object} path - AST path
- * @returns {boolean}
- */
 function checkExported(path) {
     return Boolean(path.findParent(p =>
         p.isExportNamedDeclaration() ||
@@ -174,21 +112,12 @@ function checkExported(path) {
     ));
 }
 
-/**
- * Checks default export status
- * @param {Object} path - AST path
- * @returns {boolean}
- */
 function checkDefaultExport(path) {
     return Boolean(path.findParent(p =>
         p.isExportDefaultDeclaration()
     ));
 }
 
-/**
- * Final processing for statistical calculations
- * @param {Object} state - Metric state
- */
 const postProcessing = (state) => {
     const fileCount = Object.keys(state.result.files).length;
     state.result.statistics.averageClassesPerFile = fileCount > 0

@@ -10,9 +10,9 @@ export const TS_EXTENSION = '.ts';
 export const LINE_BREAK = '\n';
 
 export const BABEL_PARSER_OPTIONS = {
-    sourceType: 'unambiguous',
+    sourceType: "unambiguous",
     plugins: [
-        'typescript',
+        "typescript",
         "jsx"
     ]
 };
@@ -25,6 +25,11 @@ export const MESSAGES = {
         ERROR_READING_IGNORE_FILE: 'Error reading .ignore file at',
         ERROR_NO_METRICS: 'No metrics provided and useDefaultMetrics is set to false',
         MISSING_EXPORTS: 'Missing required exports: state, visitors, postProcessing (optional).',
-        PROCESSING_ERROR: 'Error processing metric file'
+        PROCESSING_ERROR: 'Error processing metric file',
+        ERROR_READING_SOURCE_CODE: 'Error reading source code on',
+        ERROR_TRAVERSING_AST: 'Error traversing AST:'
+    },
+    INFO: {
+        SKIPPING_FILE: 'Skipping file...'
     }
 };

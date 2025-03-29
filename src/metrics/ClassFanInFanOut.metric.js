@@ -45,7 +45,6 @@ const visitors = [
         },
 
         AssignmentExpression(path, state) {
-            // Detecta asignaciones de la forma: this.parkedCar = new Car();
             if (
                 path.get('left').isMemberExpression() &&
                 path.get('left.object').isThisExpression() &&
@@ -54,7 +53,6 @@ const visitors = [
                 const propertyName = path.get('left.property').node.name;
                 const callee = path.get('right.callee');
                 const className = callee.node.name;
-                // Registra la asociación en state.instanceMap
                 state.instanceMap[propertyName] = className;
             }
         }
@@ -73,7 +71,6 @@ const visitors = [
             const caller = getClassName(parent)
 
             const handler = {
-                // TODO: Add examples
                 Identifier(node) {
                     const identifierName = node.node.name;
 
@@ -122,11 +119,6 @@ function addFanIn(data, caller, callee) {
     });
 }
 
-/**
- * Resolves class name from AST context
- * @param {Object} path - AST path
- * @returns {string}
- */
 function getClassName(path) {
     // Named class detection
     if (path.node.id) return path.node.id.name;

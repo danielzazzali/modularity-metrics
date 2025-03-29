@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --roots tests"
   },
   "repository": {
     "type": "git",
@@ -29,9 +29,11 @@
   "homepage": "https://github.com/danielzazzali/modularity-metrics#readme",
   "dependencies": {
     "@babel/parser": "^7.25.6",
-    "@babel/traverse": "^7.25.6"
+    "@babel/traverse": "^7.25.6",
+    "@jest/globals": "^29.7.0"
   },
   "devDependencies": {
-    "@babel/generator": "^7.26.5"
+    "@babel/generator": "^7.26.5",
+    "jest": "^29.7.0"
   }
 }
