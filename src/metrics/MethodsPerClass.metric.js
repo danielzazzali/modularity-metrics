@@ -57,7 +57,7 @@ function initFileEntry() {
     if (!state.result.files[state.currentFile]) {
 
         state.result.files[state.currentFile] = {
-            classes: {}
+            'classes - objects': {}
         };
     }
 }
