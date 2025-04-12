@@ -134,8 +134,10 @@ const visitors = [
             const caller = getClassName(parent)
 
             const handler = {
-                /*
-                TODO: add example
+                /* Example:
+                this.parkedCar.on();
+
+                This will count the call to on() method in property as a call to class 'Car'
                 */
                 CallExpression(path) {
                     const { node } = path;
