@@ -134,20 +134,90 @@ const visitors = [
             const caller = getClassName(parent)
 
             const handler = {
-                /* Example:
-                this.parkedCar.on();
-
-                This will count the call to on() method in property as a call to class 'Car'
-                */
                 CallExpression(path) {
                     const { node } = path;
 
+                    /* Example:
+                    this.parkedCar.on();
+
+                    This will count the call to on() method in property as a call to class 'Car'
+                    */
                     if (node.callee.type === 'MemberExpression' &&
                         node.callee.object.type === 'MemberExpression' &&
                         node.callee.object.object.type === 'ThisExpression')
                     {
                         const propertyName = node.callee.object.property.name;
                         const calleeName = state.classCallee[propertyName]
+
+                        updateFanOut(state.result, caller, calleeName);
+                        updateFanIn(state.result, calleeName, caller);
+                    }
+
+
+                    /* Example:
+                    new Car().on();
+
+                    This will count the call to on() method and the constructor of class 'Car'
+                    */
+                    if (node.callee.type === "MemberExpression" &&
+                        node.callee.object.type === "NewExpression" &&
+                        node.callee.object.callee.type === "Identifier" &&
+                        node.callee.property.type === "Identifier"
+                    ) {
+                        const className = node.callee.object.callee.name;
+                        const methodName = node.callee.property.name;
+
+                        // For constructor
+                        updateFanOut(state.result, caller, className);
+                        updateFanIn(state.result, className, caller);
+                        // For method
+                        updateFanOut(state.result, caller, className);
+                        updateFanIn(state.result, className, caller);
+                    }
+
+                    /* Example:
+                    myCarConstant.on();
+
+                    This will count the call to on() method in class 'Car'
+                    */
+                    if (node.callee.type === "MemberExpression" &&
+                        node.callee.object.type === "Identifier" &&
+                        node.callee.property.type === "Identifier"
+                    ) {
+                        const variableName = node.callee.object.name;
+                        const calleeName = state.classCallee[variableName]
+
+                        if(calleeName) {
+                            updateFanOut(state.result, caller, calleeName);
+                            updateFanIn(state.result, calleeName, caller);
+                        }
+                    }
+
+
+                    /* Example:
+                    Car.on();
+
+                    This will count the call to on() method in class 'Car'
+                    */
+                    if (node.callee.type === "MemberExpression" &&
+                        node.callee.object.type === "Identifier" &&
+                        node.callee.property.type === "Identifier"
+                    ) {
+                        const calleeName = node.callee.object.name;
+
+                        if(findClassByName(calleeName)) {
+                            updateFanOut(state.result, caller, calleeName);
+                            updateFanIn(state.result, calleeName, caller);
+                        }
+                    }
+
+
+                    if (node.callee.type === "MemberExpression" &&
+                        node.callee.computed === true &&
+                        node.callee.object.type === "Identifier" &&
+                        node.callee.property.type === "StringLiteral"
+                    ) {
+                        const calleeName = node.callee.object.name;
 
                         updateFanOut(state.result, caller, calleeName);
                         updateFanIn(state.result, calleeName, caller);
@@ -172,6 +242,10 @@ function updateFanIn(classArray, calleeName, callerName) {
     if (calleeClass) {
         calleeClass.fanIn.push(callerName);
     }
+}
+
+function findClassByName(targetClassName) {
+    return state.result.find(cls => cls.name === targetClassName);
 }
 
 function getClassName(path) {
