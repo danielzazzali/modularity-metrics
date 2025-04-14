@@ -211,7 +211,11 @@ const visitors = [
                         }
                     }
 
+                    /* Example:
+                    Car['on']();
 
+                    This will count the call to on() method in class 'Car'
+                    */
                     if (node.callee.type === "MemberExpression" &&
                         node.callee.computed === true &&
                         node.callee.object.type === "Identifier" &&
