@@ -3,15 +3,15 @@ import { MESSAGES } from "../constants/constants.js";
 import path from "path";
 import { METRICS_PATH } from "../constants/constants.js";
 
-async function loadMetrics({ useDefaultMetrics, metricsPath, __dirname}) {
+export async function loadMetricFiles(useDefaultMetrics, customMetricsPath, __dirname) {
     let metricFiles = [];
 
     if (useDefaultMetrics) {
         metricFiles = await getFiles(path.join(__dirname, METRICS_PATH));
     }
 
-    if (metricsPath) {
-        const additionalMetricFiles = await getFiles(metricsPath);
+    if (customMetricsPath) {
+        const additionalMetricFiles = await getFiles(customMetricsPath);
         metricFiles = metricFiles.concat(additionalMetricFiles);
     }
 
@@ -19,14 +19,28 @@ async function loadMetrics({ useDefaultMetrics, metricsPath, __dirname}) {
 }
 
 async function importMetric(file) {
-    const { state, visitors, postProcessing } = await import(file.filePath);
+    const { state, visitors } = await import(file.filePath);
 
     if (!state || !visitors) {
-        console.error(`${MESSAGES.ERRORS.PROCESSING_ERROR} ${file.filePath}: ${MESSAGES.ERRORS.MISSING_EXPORTS}`);
-        return { error: `${MESSAGES.ERRORS.PROCESSING_ERROR} ${file.filePath}: ${MESSAGES.ERRORS.MISSING_EXPORTS}` };
+        throw new Error(`${MESSAGES.ERRORS.PROCESSING_ERROR} ${file.filePath}: ${MESSAGES.ERRORS.MISSING_EXPORTS}`);
     }
 
-    return { state, visitors, postProcessing };
+    return { state, visitors };
 }
 
-export { loadMetrics, importMetric };
+async function loadMetricObjects(metricFiles) {
+    const metricsObjects = [];
+
+    for (const file of metricFiles) {
+        try {
+            const metric = await importMetric(file);
+            metricsObjects.push(metric);
+        } catch (error) {
+            console.error(error.message);
+        }
+    }
+
+    return metricsObjects;
+}
+
+export { loadMetricObjects };

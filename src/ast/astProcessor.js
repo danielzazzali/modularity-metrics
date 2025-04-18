@@ -22,7 +22,7 @@ async function getAST(filePath) {
     }
 }
 
-async function getASTs(files) {
+async function constructASTs(files) {
     const astPromises = files.map(async (file) => {
         const ast = await getAST(file.filePath);
         if (ast === null) return;
@@ -37,4 +37,4 @@ async function getASTs(files) {
     return await Promise.all(astPromises);
 }
 
-export { getASTs };
+export { constructASTs };

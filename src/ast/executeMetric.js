@@ -1,7 +1,7 @@
 import traverse from "@babel/traverse";
 import {MESSAGES} from "../constants/constants.js";
 
-async function executeMetric({ state, visitors, postProcessing, ASTs }) {
+async function executeMetricOnASTs(state, visitors, ASTs) {
     try {
         for (let i = 0; i < visitors.length; i++) {
             for (const ast of ASTs) {
@@ -12,14 +12,21 @@ async function executeMetric({ state, visitors, postProcessing, ASTs }) {
                 }
             }
         }
-
-        if (postProcessing) {
-            postProcessing(state);
-        }
     } catch (error) {
-        state.result = `Error: ${error.message}\n Stack trace: ${error.stack}`;
+        state.result = error;
     }
+
     return state;
 }
 
-export { executeMetric };
+async function executeMetrics(metricsObjects, ASTs) {
+    // TODO: Topological sort the metrics
+
+
+    // TODO: Execute metrics in topological order
+
+
+    // TODO: Return result
+}
+
+export { executeMetrics };
