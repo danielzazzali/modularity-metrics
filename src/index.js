@@ -5,6 +5,7 @@ import { MESSAGES } from "./constants/constants.js";
 import { loadMetricFiles, loadMetricObjects } from "./loader/metricsLoader.js";
 import { fileURLToPath } from "url";
 import path from "path";
+import {kahnSort} from "./sorting/kahnSort.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

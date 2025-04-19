@@ -9,7 +9,9 @@ const state = {
         unresolved: {}
     },
     currentFile: null,
-    currentDir: null
+    currentDir: null,
+    id: '4',
+    dependencies: [],
 };
 
 const visitors = [

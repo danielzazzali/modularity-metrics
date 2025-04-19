@@ -15,6 +15,8 @@ const state = {
             generatorCount: 0
         }
     },
+    id: '1',
+    dependencies: ['5'],
     currentFile: null
 };
 

@@ -10,6 +10,8 @@ const state = {
             averageClassesPerFile: 0
         }
     },
+    id: '2',
+    dependencies: [],
     currentFile: null
 };
 

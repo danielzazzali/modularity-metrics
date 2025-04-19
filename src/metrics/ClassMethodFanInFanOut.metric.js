@@ -5,7 +5,9 @@ const state = {
             classMethods: 0
         },
         classes: []
-    }
+    },
+    id: '3',
+    dependencies: [],
 };
 
 const visitors = [

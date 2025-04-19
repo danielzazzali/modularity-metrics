@@ -13,7 +13,9 @@ const state = {
             generatorCount: 0
         }
     },
-    currentFile: null
+    currentFile: null,
+    id: '5',
+    dependencies: [],
 };
 
 const visitors = [
