@@ -24,4 +24,5 @@ async function calculateMetrics({ codePath, customMetricsPath, useDefaultMetrics
     return await executeMetrics(metricObjects, ASTs);
 }
 
+
 export { calculateMetrics };

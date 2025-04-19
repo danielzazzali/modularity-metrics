@@ -19,13 +19,13 @@ export async function loadMetricFiles(useDefaultMetrics, customMetricsPath, __di
 }
 
 async function importMetric(file) {
-    const { state, visitors } = await import(file.filePath);
+    const { state, visitors, postProcessing } = await import(file.filePath);
 
     if (!state || !visitors) {
         throw new Error(`${MESSAGES.ERRORS.PROCESSING_ERROR} ${file.filePath}: ${MESSAGES.ERRORS.MISSING_EXPORTS}`);
     }
 
-    return { state, visitors };
+    return { state, visitors, postProcessing };
 }
 
 async function loadMetricObjects(metricFiles) {
