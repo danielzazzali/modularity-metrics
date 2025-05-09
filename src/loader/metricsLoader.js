@@ -1,7 +1,8 @@
 import { getFiles } from "../files/fileReader.js";
-import { MESSAGES } from "../constants/constants.js";
+import {MESSAGES, REGEX_METRICS_ID} from "../constants/constants.js";
 import path from "path";
 import { METRICS_PATH } from "../constants/constants.js";
+import {logger} from "../logger/logger.js";
 
 export async function loadMetricFiles(useDefaultMetrics, customMetricsPath, __dirname) {
     let metricFiles = [];
@@ -25,6 +26,10 @@ async function importMetric(file) {
         throw new Error(`${MESSAGES.ERRORS.PROCESSING_ERROR} ${file.filePath}: ${MESSAGES.ERRORS.MISSING_EXPORTS}`);
     }
 
+    if (!REGEX_METRICS_ID.test(state.id)) {
+        throw new Error(`${MESSAGES.ERRORS.ERROR_INVALID_METRIC_ID} ${state.id}: ${MESSAGES.ERRORS.ID_MUST_MATCH_REGEX} ${REGEX_METRICS_ID}`);
+    }
+
     return { state, visitors, postProcessing };
 }
 
@@ -36,7 +41,7 @@ async function loadMetricObjects(metricFiles) {
             const metric = await importMetric(file);
             metricsObjects.push(metric);
         } catch (error) {
-            console.error(error.message);
+            logger.logMetricError(error.message);
         }
     }
 

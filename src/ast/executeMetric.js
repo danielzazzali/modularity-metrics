@@ -1,6 +1,7 @@
 import traverse from "@babel/traverse";
 import {MESSAGES} from "../constants/constants.js";
 import {kahnSort} from "../sorting/kahnSort.js";
+import {logger} from "../logger/logger.js";
 
 
 async function executeMetrics(metricObjects, ASTs) {
@@ -22,7 +23,7 @@ async function executeMetrics(metricObjects, ASTs) {
                 try {
                     traverse.default(ast, visitor, null, metric.state);
                 } catch (error) {
-                    console.error(`${MESSAGES.ERRORS.ERROR_TRAVERSING_AST} ${ast.loc.filePath}`, error);
+                    logger.logTraverseError(`${MESSAGES.ERRORS.ERROR_TRAVERSING_AST} ${metric.state.id} ${error.message}`);
                 }
             }
         }
@@ -32,6 +33,11 @@ async function executeMetrics(metricObjects, ASTs) {
         }
         resultMap[metric.state.id] = metric.state;
     }
+
+    resultMap['parse-errors'] = logger.getParseErrors();
+    resultMap['metric-errors'] = logger.getMetricErrors();
+    resultMap['traverse-errors'] = logger.getTraverseErrors();
+
 
     return resultMap;
 }

@@ -27,9 +27,19 @@ export const MESSAGES = {
         MISSING_EXPORTS: 'Skipping metric file because it lacks the required exports { state, visitors }',
         PROCESSING_ERROR: 'Error processing metric file',
         ERROR_READING_SOURCE_CODE: 'Error reading source code on',
-        ERROR_TRAVERSING_AST: 'Error traversing AST:'
+        ERROR_TRAVERSING_AST: 'Error traversing AST:',
+        ERROR_INVALID_METRIC_ID: 'Invalid state.id',
+        ID_MUST_MATCH_REGEX: 'Must match'
     },
     INFO: {
         SKIPPING_FILE: 'Skipping file...'
     }
 };
+
+export const REGEX_METRICS_ID =  /^(?:@[a-z0-9-*~][a-z0-9-*._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/;
+
+/**
+ * Keys to remove from AST nodes during cleanup.
+ * @type {string[]}
+ */
+export const CLEANUP_KEYS = ['loc', 'start', 'end', 'trailingComments', 'leadingComments'];
