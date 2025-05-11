@@ -1,6 +1,6 @@
 const state = {
     name: "Classes Per File",
-    description: "",
+    description: "Analyzes each source file to identify and record all top-level classes defined within it—capturing named class declarations, default-exported classes (using the file name as the key), class expressions assigned to variables, and string-literal object properties—while ignoring nested or anonymous inline class definitions.",
     result: {},
     id: 'classes',
     dependencies: [],
@@ -20,28 +20,42 @@ const visitors = [
             /* Examples:
             class Calculator {}
             class AdvancedCalculator extends Calculator {}
+
+            parentPath.node.type === 'Program' -> Consider only file block class declarations
+            Ignore: (() => { <Class_declaration_here> })();
             */
             if (node.id &&
                 node.id.name &&
                 parentPath.node.type === 'Program'
             ) {
+                /* Ignore:
+                class SuperCalculator extends class {}
+                */
+                if (node.superClass &&
+                    node.superClass.type === 'ClassExpression'
+                ) {
+                    return;
+                }
+
                 state.result[state.currentFile][node.id.name] = path.node;
                 return;
             }
 
             /* Examples:
-            class Calculator {}
-            class AdvancedCalculator extends Calculator {}
+            export default class {}
+            export default class Foo{}
             */
-            if (node.id &&
-                node.id.name &&
-                parentPath.node.type === 'Program'
-            ) {
-                state.result[state.currentFile][node.id.name] = path.node;
+            if (parentPath.node.type === 'ExportDefaultDeclaration') {
+
+                // Classes with default export will be referenced by the name of the file
+                const className = state.currentFile
+                                        .split('/')
+                                        .pop()
+                                        .replace(/\.(js|ts)$/, '');
+
+                state.result[state.currentFile][className] = path.node;
                 return;
             }
-
-            if (true){};
         },
 
         ClassExpression(path) {
@@ -55,11 +69,49 @@ const visitors = [
                 parentPath.node.id &&
                 parentPath.node.id.name
             ) {
+
+                /* Ignore:
+                (() => { <Class_expression_here> })();
+                */
+                if (parentPath.find(p => p.isCallExpression())) {
+                    return;
+                }
+
+                /* Ignore:
+                class SuperCalculator extends class {}
+                */
+                if (node.superClass &&
+                    node.superClass.type === 'ClassExpression'
+                ) {
+                    return;
+                }
+
                 state.result[state.currentFile][parentPath.node.id.name] = path.node;
                 return;
             }
 
-            if (true){};
+            /* Examples:
+            { ['LiteralClassName']: class {} }
+            */
+            if (parentPath.node.type === 'ObjectProperty' &&
+                parentPath.node.key &&
+                parentPath.node.key.type === 'StringLiteral'
+            ) {
+                state.result[state.currentFile][parentPath.node.key.value] = path.node;
+                return;
+            }
+
+            /* Examples:
+            { Printer: class {} }
+            */
+            if (parentPath.node.type === 'ObjectProperty' &&
+                parentPath.node.key &&
+                parentPath.node.key.type === 'Identifier' &&
+                parentPath.node.computed === false
+            ) {
+                state.result[state.currentFile][parentPath.node.key.name] = path.node;
+                return;
+            }
         }
     }
 ];
@@ -68,50 +120,6 @@ function initFileEntry() {
     if (!state.result[state.currentFile]) {
         state.result[state.currentFile] = {};
     }
-}
-
-function processClass(path) {
-    if (!state.currentFile) return;
-
-    let className = getClassName(path);
-
-    state.result[state.currentFile][className] = path.node;
-}
-
-function getClassName(path) {
-    const node = path.node;
-    const parentPath = path.parentPath;
-
-    /* Examples:
-    const Logger = class {}
-    */
-    if (parentPath.node.type === 'VariableDeclarator' &&
-        parentPath.node.id &&
-        parentPath.node.id.name
-    ) {
-        return parentPath.node.id.name
-    }
-
-    /* Examples:
-    { ['LiteralClass']: class {} }
-    */
-    if (node.type === 'ClassExpression' &&
-        parentPath.node.type === 'ObjectProperty' &&
-        parentPath.node.key &&
-        parentPath.node.key.type === 'StringLiteral'
-    ) {
-        return parentPath.node.key.value;
-    }
-
-    // Assignment pattern: MyClass = class {}
-    // if (parent.isAssignmentExpression()) {
-    //     className = parent.node.left?.name || className;
-    // }
-
-    // Object property: { MyClass: class {} }
-    // if (parent.isObjectProperty()) {
-    //     className = parent.node.key.name || className;
-    // }
 }
 
 const postProcessing = (state) => {
