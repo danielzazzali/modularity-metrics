@@ -1,6 +1,6 @@
 const state = {
     name: "Classes Per File",
-    description: "Analyzes each source file to identify and record all top-level classes defined within it—capturing named class declarations, default-exported classes (using the file name as the key), class expressions assigned to variables, and string-literal object properties—while ignoring nested or anonymous inline class definitions.",
+    description: "Analyzes each source file to identify and record all top-level classes defined within it—capturing named class declarations, default-exported classes (using the file name as the key), class expressions assigned to variables, class expressions in string-literal object properties, and class expressions in object properties with identifier keys—while ignoring nested or anonymous inline class definitions.",
     result: {},
     id: 'classes',
     dependencies: [],
