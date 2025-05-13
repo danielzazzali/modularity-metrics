@@ -2,7 +2,7 @@ import { getFiles } from "../files/fileReader.js";
 import {MESSAGES, REGEX_METRICS_ID} from "../constants/constants.js";
 import path from "path";
 import { METRICS_PATH } from "../constants/constants.js";
-import {logger} from "../logger/logger.js";
+import { logger } from "../logger/logger.js";
 
 export async function loadMetricFiles(useDefaultMetrics, customMetricsPath, __dirname) {
     let metricFiles = [];
@@ -24,6 +24,10 @@ async function importMetric(file) {
 
     if (!state || !visitors) {
         throw new Error(`${MESSAGES.ERRORS.PROCESSING_ERROR} ${file.filePath}: ${MESSAGES.ERRORS.MISSING_EXPORTS}`);
+    }
+
+    if(!state.id) {
+        throw new Error(`${MESSAGES.ERRORS.METRIC_HAS_NO_ID} ${JSON.stringify(state)}`);
     }
 
     if (!REGEX_METRICS_ID.test(state.id)) {

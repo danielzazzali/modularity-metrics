@@ -1,3 +1,12 @@
+Done:
+
+1. Dump de 3 tipos de errores: Parsing, Traversing
+
+
+
+
+
+
 1 metricas como servicio
 2 testing
 3 identificar por clase+path
@@ -12,11 +21,3 @@
 
 
 dump de los archivos que no fueron procesados y las met
-
-<---!  begin_loop [INDEX] from [1..0]    --->
-
-
-[INDEX]
-
-
-<----! end loop ---->

@@ -1,7 +1,7 @@
 import traverse from "@babel/traverse";
-import {MESSAGES} from "../constants/constants.js";
-import {kahnSort} from "../sorting/kahnSort.js";
-import {logger} from "../logger/logger.js";
+import { MESSAGES } from "../constants/constants.js";
+import { kahnSort } from "../sorting/kahnSort.js";
+import { logger } from "../logger/logger.js";
 
 
 async function executeMetrics(metricObjects, ASTs) {
@@ -9,19 +9,19 @@ async function executeMetrics(metricObjects, ASTs) {
     const resultMap = {};
 
     for (const metric of sortedMetrics) {
-
-        for (const dep of metric.state.dependencies) {
-            if (!metric.state.dependencyResults) {
-                metric.state.dependencyResults = {};
+        if (!metric.state.dependencies)  {
+            metric.state.dependencies = {};
+        } else {
+            for (const dep of metric.state.dependencies) {
+                metric.state.dependencies = {};
+                metric.state.dependencies[dep] = structuredClone(resultMap[dep]);
             }
-
-            metric.state.dependencyResults[dep] = resultMap[dep].result;
         }
 
-        for (const visitor of metric.visitors) {
+        for (const visitors of metric.visitors) {
             for (const ast of ASTs) {
                 try {
-                    traverse.default(ast, visitor, null, metric.state);
+                    traverse.default(ast, visitors, null, metric.state);
                 } catch (error) {
                     logger.logTraverseError(`${MESSAGES.ERRORS.ERROR_TRAVERSING_AST} ${metric.state.id} ${error.message}`);
                 }
@@ -31,15 +31,21 @@ async function executeMetrics(metricObjects, ASTs) {
         if (metric.postProcessing) {
             metric.postProcessing(metric.state);
         }
-        resultMap[metric.state.id] = metric.state;
+        resultMap[metric.state.id] = metric.state.result;
     }
 
-    resultMap['parse-errors'] = logger.getParseErrors();
-    resultMap['metric-errors'] = logger.getMetricErrors();
-    resultMap['traverse-errors'] = logger.getTraverseErrors();
+    let result = {};
 
+    for (const metric of sortedMetrics) {
+        result[metric.state.id] = metric.state;
+        delete result[metric.state.id].id
+    }
 
-    return resultMap;
+    result.parse_errors = logger.getParseErrors();
+    result.metric_errors = logger.getMetricErrors();
+    result.traverse_errors = logger.getTraverseErrors();
+
+    return result;
 }
 
 export { executeMetrics };

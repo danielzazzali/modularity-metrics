@@ -29,7 +29,8 @@ export const MESSAGES = {
         ERROR_READING_SOURCE_CODE: 'Error reading source code on',
         ERROR_TRAVERSING_AST: 'Error traversing AST:',
         ERROR_INVALID_METRIC_ID: 'Invalid state.id',
-        ID_MUST_MATCH_REGEX: 'Must match'
+        ID_MUST_MATCH_REGEX: 'Must match',
+        METRIC_HAS_NO_ID: 'Metric has no id',
     },
     INFO: {
         SKIPPING_FILE: 'Skipping file...'

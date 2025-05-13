@@ -116,14 +116,16 @@ const visitors = [
     }
 ];
 
-function initFileEntry() {
+function initFileEntry(){
     if (!state.result[state.currentFile]) {
         state.result[state.currentFile] = {};
     }
 }
 
-const postProcessing = (state) => {
+function postProcessing(state){
     if (state.currentFile) delete state.currentFile;
-};
+    state.result = state.dependencies;
+    if (state.dependencies) delete state.dependencies;
+}
 
 export { state, visitors, postProcessing };
