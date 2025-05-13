@@ -10,7 +10,7 @@ const visitors = [
     {
         Program(path) {
             state.currentFile = path.node.filePath;
-            state.result = structuredClone(state.dependencies.files);
+            state.result = state.dependencies.files;
         },
 
         FunctionDeclaration(path) {
