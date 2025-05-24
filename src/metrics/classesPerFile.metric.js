@@ -3,14 +3,15 @@ const state = {
     description: "Analyzes each source file to identify and record all top-level classes defined within it—capturing named class declarations, default-exported classes (using the file name as the key), class expressions assigned to variables, class expressions in string-literal object properties, and class expressions in object properties with identifier keys—while ignoring nested or anonymous inline class definitions.",
     result: {},
     id: 'classes',
-    dependencies: [],
+    dependencies: ['files']
 };
 
 const visitors = [
     {
+        // Entry point for each parsed file, load dependency
         Program(path) {
             state.currentFile = path.node.filePath;
-            if (state.currentFile) initFileEntry();
+            state.result = state.dependencies.files;
         },
 
         ClassDeclaration(path) {
@@ -18,18 +19,18 @@ const visitors = [
             const parentPath = path.parentPath;
 
             /* Examples:
-            class Calculator {}
-            class AdvancedCalculator extends Calculator {}
+               class Calculator {}
+               class AdvancedCalculator extends Calculator {}
 
-            parentPath.node.type === 'Program' -> Consider only file block class declarations
-            Ignore: (() => { <Class_declaration_here> })();
+               parentPath.node.type === 'Program' -> Consider only file block class declarations
+               Ignore: (() => { <Class_declaration_here> })();
             */
             if (node.id &&
                 node.id.name &&
                 parentPath.node.type === 'Program'
             ) {
                 /* Ignore:
-                class SuperCalculator extends class {}
+                   class SuperCalculator extends class {}
                 */
                 if (node.superClass &&
                     node.superClass.type === 'ClassExpression'
@@ -42,8 +43,8 @@ const visitors = [
             }
 
             /* Examples:
-            export default class {}
-            export default class Foo{}
+               export default class {}
+               export default class Foo{}
             */
             if (parentPath.node.type === 'ExportDefaultDeclaration') {
 
@@ -63,7 +64,7 @@ const visitors = [
             const parentPath = path.parentPath;
 
             /* Examples:
-            const Logger = class {}
+               const Logger = class {}
             */
             if (parentPath.node.type === 'VariableDeclarator' &&
                 parentPath.node.id &&
@@ -71,14 +72,14 @@ const visitors = [
             ) {
 
                 /* Ignore:
-                (() => { <Class_expression_here> })();
+                   (() => { <Class_expression_here> })();
                 */
                 if (parentPath.find(p => p.isCallExpression())) {
                     return;
                 }
 
                 /* Ignore:
-                class SuperCalculator extends class {}
+                   class SuperCalculator extends class {}
                 */
                 if (node.superClass &&
                     node.superClass.type === 'ClassExpression'
@@ -91,7 +92,7 @@ const visitors = [
             }
 
             /* Examples:
-            { ['LiteralClassName']: class {} }
+               { ['LiteralClassName']: class {} }
             */
             if (parentPath.node.type === 'ObjectProperty' &&
                 parentPath.node.key &&
@@ -102,7 +103,7 @@ const visitors = [
             }
 
             /* Examples:
-            { Printer: class {} }
+               { Printer: class {} }
             */
             if (parentPath.node.type === 'ObjectProperty' &&
                 parentPath.node.key &&
