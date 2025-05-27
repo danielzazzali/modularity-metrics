@@ -9,49 +9,47 @@ const state = {
     dependencies: ['files']
 }
 
-const visitors = [
-    {
-        // Entry point for each parsed file, load dependency
-        Program(path) {
-            state.currentFile = path.node.filePath;
-            state.result = state.dependencies.files;
-            state.result[state.currentFile] = []
-        },
+const visitors = {
+    // Entry point for each parsed file, load dependency
+    Program(path) {
+        state.currentFile = path.node.filePath;
+        state.result = state.dependencies.files;
+        state.result[state.currentFile] = []
+    },
 
-        ImportDeclaration(path) {
-            const node = path.node;
-            const importSource = node.source.value;
+    ImportDeclaration(path) {
+        const node = path.node;
+        const importSource = node.source.value;
+        const absoluteImport = resolveImportPath(state.currentFile, importSource);
+
+        if(!absoluteImport) return;
+
+        state.result[state.currentFile].push(absoluteImport)
+    },
+
+    CallExpression(path) {
+        const node = path.node;
+
+        if (node.callee.name === 'require' && node['arguments'].length === 1 && node['arguments'][0].type === 'StringLiteral') {
+            const importSource = node['arguments'][0].value;
             const absoluteImport = resolveImportPath(state.currentFile, importSource);
 
             if(!absoluteImport) return;
 
             state.result[state.currentFile].push(absoluteImport)
-        },
+        }
+    },
 
-        CallExpression(path) {
-            const node = path.node;
+    TSImportEqualsDeclaration(path) {
+        const node = path.node;
+        const importSource = node.moduleReference.expression.value;
+        const absoluteImport = resolveImportPath(state.currentFile, importSource);
 
-            if (node.callee.name === 'require' && node['arguments'].length === 1 && node['arguments'][0].type === 'StringLiteral') {
-                const importSource = node['arguments'][0].value;
-                const absoluteImport = resolveImportPath(state.currentFile, importSource);
+        if(!absoluteImport) return;
 
-                if(!absoluteImport) return;
-
-                state.result[state.currentFile].push(absoluteImport)
-            }
-        },
-
-        TSImportEqualsDeclaration(path) {
-            const node = path.node;
-            const importSource = node.moduleReference.expression.value;
-            const absoluteImport = resolveImportPath(state.currentFile, importSource);
-
-            if(!absoluteImport) return;
-
-            state.result[state.currentFile].push(absoluteImport)
-        },
-    }
-]
+        state.result[state.currentFile].push(absoluteImport)
+    },
+};
 
 function resolveImportPath(importingFile, importSource) {
     if (!importSource.startsWith('.') && !path.isAbsolute(importSource)) {

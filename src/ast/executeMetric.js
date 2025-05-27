@@ -18,7 +18,9 @@ async function executeMetrics(metricObjects, ASTs) {
             }
         }
 
-        for (const visitors of metric.visitors) {
+        const visitorsList = Array.isArray(metric.visitors) ? metric.visitors : [metric.visitors];
+
+        for (const visitors of visitorsList) {
             for (const ast of ASTs) {
                 try {
                     traverse.default(ast, visitors, null, metric.state);

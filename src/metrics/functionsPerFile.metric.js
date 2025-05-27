@@ -6,40 +6,38 @@ const state = {
     dependencies: ['files']
 }
 
-const visitors = [
-    {
-        // Entry point for each parsed file, load dependency and create functions array for each file
-        Program(path) {
-            state.currentFile = path.node.filePath;
-            state.result = state.dependencies.files;
-            state.result[state.currentFile]['functions'] = [];
-        },
+const visitors = {
+    // Entry point for each parsed file, load dependency and create functions array for each file
+    Program(path) {
+        state.currentFile = path.node.filePath;
+        state.result = state.dependencies.files;
+        state.result[state.currentFile]['functions'] = [];
+    },
 
-        /* Examples:
-           function foo() {}
-           async function bar() {}
-        */
-        FunctionDeclaration(path) {
-            state.result[state.currentFile]['functions'].push(path.node);
-        },
+    /* Examples:
+       function foo() {}
+       async function bar() {}
+    */
+    FunctionDeclaration(path) {
+        state.result[state.currentFile]['functions'].push(path.node);
+    },
 
-        /* Examples:
-           const baz = function() {}
-           const qux = async function() {}
-        */
-        FunctionExpression(path) {
-            state.result[state.currentFile]['functions'].push(path.node);
-        },
+    /* Examples:
+       const baz = function() {}
+       const qux = async function() {}
+    */
+    FunctionExpression(path) {
+        state.result[state.currentFile]['functions'].push(path.node);
+    },
 
-        /* Examples:
-           const add = () => {}
-           items.map(item => item.value)
-        */
-        ArrowFunctionExpression(path) {
-            state.result[state.currentFile]['functions'].push(path.node);
-        },
-    }
-]
+    /* Examples:
+       const add = () => {}
+       items.map(item => item.value)
+    */
+    ArrowFunctionExpression(path) {
+        state.result[state.currentFile]['functions'].push(path.node);
+    },
+};
 
 // Clean up state before finishing
 function postProcessing(state){

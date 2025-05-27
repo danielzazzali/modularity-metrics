@@ -43,4 +43,4 @@ export const REGEX_METRICS_ID =  /^(?:@[a-z0-9-*~][a-z0-9-*._~]*\/)?[a-z0-9-~][a
  * Keys to remove from AST nodes during cleanup.
  * @type {string[]}
  */
-export const CLEANUP_KEYS = ['loc', 'start', 'end', 'trailingComments', 'leadingComments'];
+export const CLEANUP_KEYS = ['loc', 'start', 'end', 'trailingComments', 'leadingComments', 'extra', 'innerComments', 'directives'];

@@ -5,18 +5,16 @@ const state = {
     id: 'files',
 }
 
-const visitors = [
-    {
-        /* Examples:
-           /src/file1.js
-           /src/utils/helper.ts
-        */
-        Program(path) {
-            state.currentFile = path.node.filePath;
-            if (state.currentFile) initFileEntry();
-        }
+const visitors = {
+    /* Examples:
+       /src/file1.js
+       /src/utils/helper.ts
+    */
+    Program(path) {
+        state.currentFile = path.node.filePath;
+        if (state.currentFile) initFileEntry();
     }
-]
+};
 
 // Ensure a file entry exists in the result map
 function initFileEntry(){

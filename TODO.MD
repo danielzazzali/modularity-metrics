@@ -14,3 +14,7 @@ To-do:
 1. patron de diseño Pipeline, investigar patrones para el result
 2. Interfaz de cada result
 3. add status to metrics
+
+
+En la metrica files, poner el path y el nombre por separado
+Calcular fan-in y separar fan-out en file-coupling
