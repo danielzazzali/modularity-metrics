@@ -85,11 +85,35 @@ function resolveImportPath(importingFile, importSource) {
     return null;
 }
 
+// Clean up and compute fanIn/fanOut before finishing
+function postProcessing(state) {
+    const raw = state.result;
+    const processed = {};
 
-// Clean up state before finishing
-function postProcessing(state){
-    if (state.currentFile) delete state.currentFile;
-    if (state.dependencies) delete state.dependencies;
+    // Initialize fanOut and empty fanIn for every file found
+    for (const filePath of Object.keys(raw)) {
+        processed[filePath] = {
+            fanOut: raw[filePath],
+            fanIn: []
+        };
+    }
+
+    // Invert relationships to compute fanIn
+    for (const [filePath, imports] of Object.entries(raw)) {
+        for (const importedPath of imports) {
+            if (!processed[importedPath]) {
+                processed[importedPath] = { fanOut: [], fanIn: [] };
+            }
+            processed[importedPath].fanIn.push(filePath);
+        }
+    }
+
+    // Replace state.result with processed coupling data
+    state.result = processed;
+
+    // Remove internal state properties
+    delete state.currentFile;
+    delete state.dependencies;
 }
 
 
