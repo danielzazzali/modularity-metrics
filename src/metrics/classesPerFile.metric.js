@@ -123,7 +123,6 @@ function initFileEntry(){
 
 function postProcessing(state){
     if (state.currentFile) delete state.currentFile;
-    state.result = state.dependencies;
     if (state.dependencies) delete state.dependencies;
 }
 
