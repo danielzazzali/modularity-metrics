@@ -12,6 +12,25 @@ const visitors = {
         state.currentFile = path.node.filePath;
         state.result[state.currentFile] = state.dependencies['classes-per-file'][state.currentFile];
     },
+
+    ClassMethod(path) {
+        const classNode = path.findParent(p => p.isClassExpression() || p.isClassDeclaration());
+
+
+
+    },
+
+    ClassPrivateMethod(path) {
+
+    },
+
+    ClassProperty(path) {
+
+    },
+
+    ClassPrivateProperty(path) {
+
+    },
 };
 
 
