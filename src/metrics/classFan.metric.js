@@ -1,8 +1,8 @@
 const state = {
-    name: "Methods Per Class",
+    name: "Class Fan-In and Fan-Out",
     description: "",
     result: {},
-    id: 'methods-per-class',
+    id: 'class-fan',
     dependencies: ['classes-per-file']
 };
 
@@ -14,9 +14,6 @@ const visitors = {
     },
 
     ClassMethod(path) {
-        const classNode = path.findParent(p => p.isClassExpression() || p.isClassDeclaration());
-
-
 
     },
 

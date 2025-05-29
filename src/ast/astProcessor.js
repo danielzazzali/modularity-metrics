@@ -1,6 +1,6 @@
 import fs from "fs/promises";
 import {parse} from "@babel/parser";
-import {BABEL_PARSER_OPTIONS, CLEANUP_KEYS, FILE_ENCODING, MESSAGES} from "../constants/constants.js";
+import {BABEL_PARSER_OPTIONS, KEYS_TO_REMOVE, FILE_ENCODING, MESSAGES} from "../constants/constants.js";
 import { logger } from "../logger/logger.js";
 
 
@@ -30,7 +30,7 @@ export function removeASTLocation(node) {
     }
 
     // Remove each location key if present
-    for (const key of CLEANUP_KEYS) {
+    for (const key of KEYS_TO_REMOVE) {
         if (key in node) {
             delete node[key];
         }

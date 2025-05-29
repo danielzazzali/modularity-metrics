@@ -1,4 +1,4 @@
-export const LIBRARY_NAME = 'metrics-wizard';
+export const LIBRARY_NAME = 'modularity-metrics';
 export const IGNORE_FILES_FILENAME = '.metricsignore';
 export const NODE_MODULES_DIRECTORY = 'node_modules';
 
@@ -43,4 +43,4 @@ export const REGEX_METRICS_ID =  /^(?:@[a-z0-9-*~][a-z0-9-*._~]*\/)?[a-z0-9-~][a
  * Keys to remove from AST nodes during cleanup.
  * @type {string[]}
  */
-export const CLEANUP_KEYS = ['loc', 'start', 'end', 'trailingComments', 'leadingComments', 'extra', 'innerComments', 'directives'];
+export const KEYS_TO_REMOVE = ['loc', 'start', 'end', 'trailingComments', 'leadingComments', 'extra', 'innerComments', 'directives'];
