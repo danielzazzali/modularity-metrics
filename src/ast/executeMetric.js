@@ -43,9 +43,9 @@ async function executeMetrics(metricObjects, ASTs) {
         delete result[metric.state.id].id
     }
 
-    result.parse_errors = logger.getParseErrors();
-    result.metric_errors = logger.getMetricErrors();
-    result.traverse_errors = logger.getTraverseErrors();
+    result['parse-errors'] = logger.getParseErrors();
+    result['metric-errors'] = logger.getMetricErrors();
+    result['traverse-errors'] = logger.getTraverseErrors();
 
     return result;
 }

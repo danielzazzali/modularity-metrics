@@ -18,3 +18,6 @@ To-do:
 
 En la metrica files, poner el path y el nombre por separado
 Calcular fan-in y separar fan-out en file-coupling
+
+
+Confiar en el nombre para hacer el hash 
