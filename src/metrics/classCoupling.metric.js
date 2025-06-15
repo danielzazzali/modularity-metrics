@@ -12,53 +12,80 @@ const visitors = {
         state.currentFile = path.node.filePath;
         state.result[state.currentFile] = state.dependencies['classes-per-file'][state.currentFile];
     },
-    //
-    // ClassDeclaration(path) {
-    //     const node = path.node;
-    //     const parentPath = path.parentPath;
-    //
-    //     /* Examples:
-    //        class Calculator {}
-    //        class AdvancedCalculator extends Calculator {}
-    //
-    //        parentPath.node.type === 'Program' -> Consider only file block class declarations
-    //        Ignore: (() => { <Class_declaration_here> })();
-    //     */
-    //     if (node.id &&
-    //         node.id.name &&
-    //         parentPath.node.type === 'Program'
-    //     ) {
-    //         /* Ignore:
-    //            class SuperCalculator extends class {}
-    //         */
-    //         if (node.superClass &&
-    //             node.superClass.type === 'ClassExpression'
-    //         ) {
-    //             return;
-    //         }
-    //
-    //         const className = node.id.name
-    //         state.result[state.currentFile][className] = [];
-    //
-    //         path.traverse(
-    //             {
-    //                 ClassMethod(innerPath) {
-    //                     state.result[state.currentFile][className].push(innerPath.node);
-    //                 },
-    //                 ClassPrivateMethod(innerPath) {
-    //                     state.result[state.currentFile][className].push(innerPath.node);
-    //                 },
-    //                 ClassProperty(innerPath) {
-    //                     state.result[state.currentFile][className].push(innerPath.node);
-    //                 },
-    //                 ClassPrivateProperty(innerPath) {
-    //                     state.result[state.currentFile][className].push(innerPath.node);
-    //                 }
-    //             }
-    //         )
-    //
-    //         return;
-    //     }
+
+    ClassDeclaration(path) {
+        const node = path.node;
+        const parentPath = path.parentPath;
+
+        /* Examples:
+           class Calculator {}
+           class AdvancedCalculator extends Calculator {}
+
+           parentPath.node.type === 'Program' -> Consider only file block class declarations
+           Ignore: (() => { <Class_declaration_here> })();
+        */
+        if (node.id &&
+            node.id.name &&
+            parentPath.node.type === 'Program'
+        ) {
+            /* Ignore:
+               class SuperCalculator extends class {}
+            */
+            if (node.superClass &&
+                node.superClass.type === 'ClassExpression'
+            ) {
+                return;
+            }
+
+            const className = node.id.name
+            // state.result[state.currentFile][className] = [];
+
+            path.traverse(
+                {
+                    ClassMethod(innerPath) {
+
+                        innerPath.traverse(
+                            {
+                                NewExpression(deepPath) {
+
+                                    const methodName = innerPath.node.key.name;
+
+                                    const instantiatedClass = deepPath.node.callee.name;
+
+                                    console.log('class:',className,'method:',methodName,'is instantiating class:',instantiatedClass)
+                                },
+
+                                CallExpression(deepPath) {
+
+                                    if (deepPath.node.callee.type === 'MemberExpression' &&
+                                        deepPath.node.callee.object.type === 'Identifier' &&
+                                        deepPath.node.callee.property.type === 'Identifier'
+                                    ) {
+
+                                        const methodName = innerPath.node.key.name;
+                                        const classCalled = deepPath.node.callee.object.name;
+                                        const methodCalled = deepPath.node.callee.property.name;
+
+                                        console.log('class:',className,'method:',methodName,'is calling class:',classCalled,'on method:',methodCalled)
+                                    }
+                                }
+                            }
+                        )
+                    },
+                    ClassPrivateMethod(innerPath) {
+                        state.result[state.currentFile][className].push(innerPath.node);
+                    },
+                    ClassProperty(innerPath) {
+                        state.result[state.currentFile][className].push(innerPath.node);
+                    },
+                    ClassPrivateProperty(innerPath) {
+                        state.result[state.currentFile][className].push(innerPath.node);
+                    }
+                }
+            )
+
+            return;
+        }
     //
     //     /* Examples:
     //        export default class {}
@@ -207,7 +234,7 @@ const visitors = {
     //
     //         return;
     //     }
-    // }
+    }
 };
 
 function postProcessing(state){
