@@ -1,5 +1,3 @@
-import * as t from '@babel/types';
-
 const state = {
     name: "Classes Per File",
     description: "Analyzes each source file to identify and record all top-level classes defined",
@@ -12,7 +10,7 @@ const visitors = {
     // Entry point for each parsed file, load dependency
     Program(path) {
         state.currentFile = path.node.filePath;
-        state.result = state.dependencies['files'];
+        state.result[state.currentFile] = state.dependencies['files'][state.currentFile];
     },
 
     ClassDeclaration(path) {
