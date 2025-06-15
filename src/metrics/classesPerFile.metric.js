@@ -2,7 +2,7 @@ import * as t from '@babel/types';
 
 const state = {
     name: "Classes Per File",
-    description: "Analyzes each source file to identify and record all top-level classes defined within it—capturing named class declarations, default-exported classes (using the file name as the key), class expressions assigned to variables, class expressions in string-literal object properties, and class expressions in object properties with identifier keys—filtering each class body to retain only useful named methods and properties (including TypeScript declare/abstract members)",
+    description: "Analyzes each source file to identify and record all top-level classes defined",
     result: {},
     id: 'classes-per-file',
     dependencies: ['files']
@@ -39,7 +39,26 @@ const visitors = {
                 return;
             }
 
-            state.result[state.currentFile][node.id.name] = path.node;
+            const className = node.id.name
+            state.result[state.currentFile][className] = [];
+
+            path.traverse(
+                {
+                    ClassMethod(innerPath) {
+                        state.result[state.currentFile][className].push(innerPath.node);
+                    },
+                    ClassPrivateMethod(innerPath) {
+                        state.result[state.currentFile][className].push(innerPath.node);
+                    },
+                    ClassProperty(innerPath) {
+                        state.result[state.currentFile][className].push(innerPath.node);
+                    },
+                    ClassPrivateProperty(innerPath) {
+                        state.result[state.currentFile][className].push(innerPath.node);
+                    }
+                }
+            )
+
             return;
         }
 
@@ -48,14 +67,33 @@ const visitors = {
            export default class Foo{}
         */
         if (parentPath.node.type === 'ExportDefaultDeclaration') {
-
             // Classes with default export will be referenced by the name of the file
-            const className = state.currentFile
-                                    .split('/')
-                                    .pop()
-                                    .replace(/\.(js|ts)$/, '');
+            const className = path.node.id
+                ? path.node.id.name
+                : state.currentFile
+                    .split('/')
+                    .pop()
+                    .replace(/\.(js|ts)$/, '');
 
-            state.result[state.currentFile][className] = path.node;
+            state.result[state.currentFile][className] = [];
+
+            path.traverse(
+                {
+                    ClassMethod(innerPath) {
+                        state.result[state.currentFile][className].push(innerPath.node);
+                    },
+                    ClassPrivateMethod(innerPath) {
+                        state.result[state.currentFile][className].push(innerPath.node);
+                    },
+                    ClassProperty(innerPath) {
+                        state.result[state.currentFile][className].push(innerPath.node);
+                    },
+                    ClassPrivateProperty(innerPath) {
+                        state.result[state.currentFile][className].push(innerPath.node);
+                    }
+                }
+            )
+
             return;
         }
     },
@@ -88,7 +126,26 @@ const visitors = {
                 return;
             }
 
-            state.result[state.currentFile][parentPath.node.id.name] = path.node;
+            const className = parentPath.node.id.name;
+            state.result[state.currentFile][className] = [];
+
+            path.traverse(
+                {
+                    ClassMethod(innerPath) {
+                        state.result[state.currentFile][className].push(innerPath.node);
+                    },
+                    ClassPrivateMethod(innerPath) {
+                        state.result[state.currentFile][className].push(innerPath.node);
+                    },
+                    ClassProperty(innerPath) {
+                        state.result[state.currentFile][className].push(innerPath.node);
+                    },
+                    ClassPrivateProperty(innerPath) {
+                        state.result[state.currentFile][className].push(innerPath.node);
+                    }
+                }
+            )
+
             return;
         }
 
@@ -99,7 +156,26 @@ const visitors = {
             parentPath.node.key &&
             parentPath.node.key.type === 'StringLiteral'
         ) {
-            state.result[state.currentFile][parentPath.node.key.value] = path.node;
+            const className = parentPath.node.key.value;
+            state.result[state.currentFile][className] = [];
+
+            path.traverse(
+                {
+                    ClassMethod(innerPath) {
+                        state.result[state.currentFile][className].push(innerPath.node);
+                    },
+                    ClassPrivateMethod(innerPath) {
+                        state.result[state.currentFile][className].push(innerPath.node);
+                    },
+                    ClassProperty(innerPath) {
+                        state.result[state.currentFile][className].push(innerPath.node);
+                    },
+                    ClassPrivateProperty(innerPath) {
+                        state.result[state.currentFile][className].push(innerPath.node);
+                    }
+                }
+            )
+
             return;
         }
 
@@ -111,70 +187,32 @@ const visitors = {
             parentPath.node.key.type === 'Identifier' &&
             parentPath.node.computed === false
         ) {
-            state.result[state.currentFile][parentPath.node.key.name] = path.node;
+            const className = parentPath.node.key.name;
+            state.result[state.currentFile][className] = [];
+
+            path.traverse(
+                {
+                    ClassMethod(innerPath) {
+                        state.result[state.currentFile][className].push(innerPath.node);
+                    },
+                    ClassPrivateMethod(innerPath) {
+                        state.result[state.currentFile][className].push(innerPath.node);
+                    },
+                    ClassProperty(innerPath) {
+                        state.result[state.currentFile][className].push(innerPath.node);
+                    },
+                    ClassPrivateProperty(innerPath) {
+                        state.result[state.currentFile][className].push(innerPath.node);
+                    }
+                }
+            )
+
             return;
         }
     }
 };
 
-function initFileEntry(){
-    if (!state.result[state.currentFile]) {
-        state.result[state.currentFile] = {};
-    }
-}
-
-function cleanMethods(result) {
-    for (const file of Object.keys(result)) {
-        const classes = result[file];
-        for (const className of Object.keys(classes)) {
-            const classNode = classes[className];
-
-            // Filter the class body, keeping only useful named methods and properties
-            classNode.body.body = classNode.body.body.filter(member => {
-                // Standard class members (methods and properties)
-                const isStandard =
-                    t.isClassMethod(member) ||
-                    t.isClassPrivateMethod(member) ||
-                    t.isClassProperty(member) ||
-                    t.isClassPrivateProperty(member);
-
-                // TypeScript declare or abstract members
-                const isTS =
-                    t.isTSDeclareMethod(member) ||
-                    (typeof t.isTSAbstractMethodDefinition === 'function' && t.isTSAbstractMethodDefinition(member)) ||
-                    (typeof t.isTSAbstractClassProperty === 'function' && t.isTSAbstractClassProperty(member));
-
-                if (!(isStandard || isTS)) {
-                    // drop everything else
-                    return false;
-                }
-
-                // Keep private members (always have identifiable key)
-                if (t.isClassPrivateMethod(member) || t.isClassPrivateProperty(member)) {
-                    return true;
-                }
-
-                // For public members, enforce key identification and computed rules
-                const { key, computed } = member;
-
-                if (computed) {
-                    // only allow computed if the key is a string literal
-                    return t.isStringLiteral(key);
-                } else {
-                    // non-computed: allow Identifier, StringLiteral, NumericLiteral
-                    return (
-                        t.isIdentifier(key) ||
-                        t.isStringLiteral(key) ||
-                        t.isNumericLiteral(key)
-                    );
-                }
-            });
-        }
-    }
-}
-
 function postProcessing(state){
-    cleanMethods(state.result);
     if (state.currentFile) delete state.currentFile;
     if (state.dependencies) delete state.dependencies;
 }
