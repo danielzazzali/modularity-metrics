@@ -37,8 +37,8 @@ const visitors = {
                 return;
             }
 
-            const className = node.id.name
-            // state.result[state.currentFile][className] = [];
+            const callerClass = node.id.name
+            // state.result[state.currentFile][callerClass] = [];
 
             path.traverse(
                 {
@@ -47,39 +47,111 @@ const visitors = {
                         innerPath.traverse(
                             {
                                 NewExpression(deepPath) {
-
                                     const methodName = innerPath.node.key.name;
-
                                     const instantiatedClass = deepPath.node.callee.name;
 
-                                    console.log('class:',className,'method:',methodName,'is instantiating class:',instantiatedClass)
+                                    console.log('class:',callerClass,'method:',methodName,'is instantiating class:',instantiatedClass)
+
+                                    // TODO: count the fan-out and fan-in
                                 },
 
                                 CallExpression(deepPath) {
-
                                     if (deepPath.node.callee.type === 'MemberExpression' &&
                                         deepPath.node.callee.object.type === 'Identifier' &&
                                         deepPath.node.callee.property.type === 'Identifier'
                                     ) {
+                                        let callerMethod = innerPath.node.key.name;
+                                        const calleeClass = deepPath.node.callee.object.name;
+                                        let calleeMethod = deepPath.node.callee.property.name;
 
-                                        const methodName = innerPath.node.key.name;
-                                        const classCalled = deepPath.node.callee.object.name;
-                                        const methodCalled = deepPath.node.callee.property.name;
+                                        let count = false;
+                                        let calleeMethodIndex = 0;
+                                        let calleeFilepath = '';
 
-                                        console.log('class:',className,'method:',methodName,'is calling class:',classCalled,'on method:',methodCalled)
+                                        for (const [filePath, classes] of Object.entries(state.result)) {
+                                            // If the target class exists in this file
+                                            if (classes[calleeClass]) {
+                                                // Check each method node in that class
+                                                for (const methodNode of classes[calleeClass]) {
+                                                    const possibleCalleeMethod = methodNode.key && methodNode.key.name;
+                                                    if (calleeMethod === possibleCalleeMethod) {
+                                                        count = true;
+                                                        calleeFilepath = filePath;
+                                                        console.log('Found method:', possibleCalleeMethod, 'in class:', calleeClass,'in index:',calleeMethodIndex);
+                                                        break;
+                                                    }
+                                                    calleeMethodIndex++;
+                                                }
+                                                break;
+                                            }
+                                        }
+
+                                        let callerMethodIndex = 0;
+
+                                        // Search method node
+                                        for (const methodNode of state.result[state.currentFile][callerClass]) {
+                                            const possibleCallerMethod = methodNode.key && methodNode.key.name;
+                                            if (callerMethod === possibleCallerMethod) {
+                                                console.log('Found method:', possibleCallerMethod, 'in class:', callerClass,'in index:',callerMethodIndex);
+                                                break;
+                                            }
+                                            callerMethodIndex++;
+                                        }
+
+                                        console.log('class:',callerClass,'method:',callerMethod,'is calling class:',calleeClass,'on method:',calleeMethod)
+
+                                        // DO NOOOOT INDEX THE STRING 'CONSTRUCTOOOOOOOOR' !!!!! EVERY OBJECT ALREADY HAS A CONSTRUCTOR, YOU ARE OVERWRITING IT
+                                        // DO NOOOOT INDEX THE STRING 'CONSTRUCTOOOOOOOOR' !!!!! EVERY OBJECT ALREADY HAS A CONSTRUCTOR, YOU ARE OVERWRITING IT
+                                        // DO NOOOOT INDEX THE STRING 'CONSTRUCTOOOOOOOOR' !!!!! EVERY OBJECT ALREADY HAS A CONSTRUCTOR, YOU ARE OVERWRITING IT
+                                        // DO NOOOOT INDEX THE STRING 'CONSTRUCTOOOOOOOOR' !!!!! EVERY OBJECT ALREADY HAS A CONSTRUCTOR, YOU ARE OVERWRITING IT
+                                        // DO NOOOOT INDEX THE STRING 'CONSTRUCTOOOOOOOOR' !!!!! EVERY OBJECT ALREADY HAS A CONSTRUCTOR, YOU ARE OVERWRITING IT
+                                        // DO NOOOOT INDEX THE STRING 'CONSTRUCTOOOOOOOOR' !!!!! EVERY OBJECT ALREADY HAS A CONSTRUCTOR, YOU ARE OVERWRITING IT
+                                        if (calleeMethod === 'constructor') calleeMethod = '_constructor'
+                                        if (callerMethod === 'constructor') callerMethod = '_constructor'
+
+                                        if (count) {
+                                            if (!state.result[state.currentFile][callerClass][callerMethodIndex]['fan-out']) {
+                                                state.result[state.currentFile][callerClass][callerMethodIndex]['fan-out'] = {};
+                                            }
+
+                                            if (!state.result[state.currentFile][callerClass][callerMethodIndex]['fan-out'][calleeClass]) {
+                                                state.result[state.currentFile][callerClass][callerMethodIndex]['fan-out'][calleeClass] = {}
+                                            }
+
+                                            if (!state.result[state.currentFile][callerClass][callerMethodIndex]['fan-out'][calleeClass][calleeMethod]) {
+                                                state.result[state.currentFile][callerClass][callerMethodIndex]['fan-out'][calleeClass][calleeMethod] = 0;
+                                            }
+
+                                            state.result[state.currentFile][callerClass][callerMethodIndex]['fan-out'][calleeClass][calleeMethod]++;
+
+
+                                            if (!state.result[calleeFilepath][calleeClass][calleeMethodIndex]['fan-in']) {
+                                                state.result[calleeFilepath][calleeClass][calleeMethodIndex]['fan-in'] = {};
+                                            }
+
+                                            if (!state.result[calleeFilepath][calleeClass][calleeMethodIndex]['fan-in'][callerClass]) {
+                                                state.result[calleeFilepath][calleeClass][calleeMethodIndex]['fan-in'][callerClass] = {}
+                                            }
+
+                                            if (!state.result[calleeFilepath][calleeClass][calleeMethodIndex]['fan-in'][callerClass][callerMethod]) {
+                                                state.result[calleeFilepath][calleeClass][calleeMethodIndex]['fan-in'][callerClass][callerMethod] = 0;
+                                            }
+
+                                            state.result[calleeFilepath][calleeClass][calleeMethodIndex]['fan-in'][callerClass][callerMethod]++;
+                                        }
                                     }
                                 }
                             }
                         )
                     },
                     ClassPrivateMethod(innerPath) {
-                        state.result[state.currentFile][className].push(innerPath.node);
+
                     },
                     ClassProperty(innerPath) {
-                        state.result[state.currentFile][className].push(innerPath.node);
+
                     },
                     ClassPrivateProperty(innerPath) {
-                        state.result[state.currentFile][className].push(innerPath.node);
+
                     }
                 }
             )
@@ -236,6 +308,7 @@ const visitors = {
     //     }
     }
 };
+
 
 function postProcessing(state){
     if (state.currentFile) delete state.currentFile;
