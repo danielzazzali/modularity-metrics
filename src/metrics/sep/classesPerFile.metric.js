@@ -40,22 +40,18 @@ const visitors = {
             const className = node.id.name
             state.result[state.currentFile][className] = [];
 
-            path.traverse(
-                {
-                    ClassMethod(innerPath) {
-                        state.result[state.currentFile][className].push(innerPath.node);
-                    },
-                    ClassPrivateMethod(innerPath) {
-                        state.result[state.currentFile][className].push(innerPath.node);
-                    },
-                    ClassProperty(innerPath) {
-                        state.result[state.currentFile][className].push(innerPath.node);
-                    },
-                    ClassPrivateProperty(innerPath) {
+            path.traverse({
+                ClassMethod(innerPath) {
+                    state.result[state.currentFile][className].push(innerPath.node);
+                },
+                ClassProperty(innerPath) {
+                    if (innerPath.node.value.type === 'ArrowFunctionExpression' ||
+                        innerPath.node.value.type === 'FunctionExpression'
+                    ) {
                         state.result[state.currentFile][className].push(innerPath.node);
                     }
                 }
-            )
+            })
 
             return;
         }
@@ -75,24 +71,18 @@ const visitors = {
 
             state.result[state.currentFile][className] = [];
 
-            path.traverse(
-                {
-                    ClassMethod(innerPath) {
-                        state.result[state.currentFile][className].push(innerPath.node);
-                    },
-                    ClassPrivateMethod(innerPath) {
-                        state.result[state.currentFile][className].push(innerPath.node);
-                    },
-                    ClassProperty(innerPath) {
-                        state.result[state.currentFile][className].push(innerPath.node);
-                    },
-                    ClassPrivateProperty(innerPath) {
+            path.traverse({
+                ClassMethod(innerPath) {
+                    state.result[state.currentFile][className].push(innerPath.node);
+                },
+                ClassProperty(innerPath) {
+                    if (innerPath.node.value.type === 'ArrowFunctionExpression' ||
+                        innerPath.node.value.type === 'FunctionExpression'
+                    ) {
                         state.result[state.currentFile][className].push(innerPath.node);
                     }
                 }
-            )
-
-            return;
+            })
         }
     },
 
@@ -127,22 +117,18 @@ const visitors = {
             const className = parentPath.node.id.name;
             state.result[state.currentFile][className] = [];
 
-            path.traverse(
-                {
-                    ClassMethod(innerPath) {
-                        state.result[state.currentFile][className].push(innerPath.node);
-                    },
-                    ClassPrivateMethod(innerPath) {
-                        state.result[state.currentFile][className].push(innerPath.node);
-                    },
-                    ClassProperty(innerPath) {
-                        state.result[state.currentFile][className].push(innerPath.node);
-                    },
-                    ClassPrivateProperty(innerPath) {
+            path.traverse({
+                ClassMethod(innerPath) {
+                    state.result[state.currentFile][className].push(innerPath.node);
+                },
+                ClassProperty(innerPath) {
+                    if (innerPath.node.value.type === 'ArrowFunctionExpression' ||
+                        innerPath.node.value.type === 'FunctionExpression'
+                    ) {
                         state.result[state.currentFile][className].push(innerPath.node);
                     }
                 }
-            )
+            })
 
             return;
         }
@@ -157,22 +143,18 @@ const visitors = {
             const className = parentPath.node.key.value;
             state.result[state.currentFile][className] = [];
 
-            path.traverse(
-                {
-                    ClassMethod(innerPath) {
-                        state.result[state.currentFile][className].push(innerPath.node);
-                    },
-                    ClassPrivateMethod(innerPath) {
-                        state.result[state.currentFile][className].push(innerPath.node);
-                    },
-                    ClassProperty(innerPath) {
-                        state.result[state.currentFile][className].push(innerPath.node);
-                    },
-                    ClassPrivateProperty(innerPath) {
+            path.traverse({
+                ClassMethod(innerPath) {
+                    state.result[state.currentFile][className].push(innerPath.node);
+                },
+                ClassProperty(innerPath) {
+                    if (innerPath.node.value.type === 'ArrowFunctionExpression' ||
+                        innerPath.node.value.type === 'FunctionExpression'
+                    ) {
                         state.result[state.currentFile][className].push(innerPath.node);
                     }
                 }
-            )
+            })
 
             return;
         }
@@ -188,24 +170,18 @@ const visitors = {
             const className = parentPath.node.key.name;
             state.result[state.currentFile][className] = [];
 
-            path.traverse(
-                {
-                    ClassMethod(innerPath) {
-                        state.result[state.currentFile][className].push(innerPath.node);
-                    },
-                    ClassPrivateMethod(innerPath) {
-                        state.result[state.currentFile][className].push(innerPath.node);
-                    },
-                    ClassProperty(innerPath) {
-                        state.result[state.currentFile][className].push(innerPath.node);
-                    },
-                    ClassPrivateProperty(innerPath) {
+            path.traverse({
+                ClassMethod(innerPath) {
+                    state.result[state.currentFile][className].push(innerPath.node);
+                },
+                ClassProperty(innerPath) {
+                    if (innerPath.node.value.type === 'ArrowFunctionExpression' ||
+                        innerPath.node.value.type === 'FunctionExpression'
+                    ) {
                         state.result[state.currentFile][className].push(innerPath.node);
                     }
                 }
-            )
-
-            return;
+            })
         }
     }
 };
