@@ -9,12 +9,17 @@ async function executeMetrics(metricObjects, ASTs) {
     const resultMap = {};
 
     for (const metric of sortedMetrics) {
-        if (!metric.state.dependencies)  {
-            metric.state.dependencies = {};
-        } else {
-            for (const dep of metric.state.dependencies) {
-                metric.state.dependencies = {};
+        const depList = Array.isArray(metric.state.dependencies)
+            ? metric.state.dependencies
+            : [];
+
+        metric.state.dependencies = {};
+
+        for (const dep of depList) {
+            if (resultMap[dep]) {
                 metric.state.dependencies[dep] = structuredClone(resultMap[dep]);
+            } else {
+                logger.logMetricError(`Dependency "${dep}" not found for metric ${metric.state.id}`);
             }
         }
 

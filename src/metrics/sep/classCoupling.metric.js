@@ -3,7 +3,7 @@ const state = {
     description: "Analyzes each class to identify Fan-Out and Fan-In",
     result: {},
     id: 'class-coupling',
-    dependencies: ['classes-per-file']
+    dependencies: ['classes-per-file', 'instance-mapper']
 };
 
 const visitors = {
@@ -11,6 +11,7 @@ const visitors = {
     Program(path) {
         state.currentFile = path.node.filePath;
         state.result[state.currentFile] = state.dependencies['classes-per-file'][state.currentFile];
+        console.log(state.dependencies['instance-mapper'][state.currentFile]);
     },
 
     ClassDeclaration(path) {
