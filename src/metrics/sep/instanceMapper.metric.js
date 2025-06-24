@@ -1,8 +1,8 @@
 const state = {
-    name: "Instance Mapper",
-    description: "Walks through each class method to identify instance accesses (this.prop and local variables) and map them to their constructor types",
+    name: 'Instance Mapper',
+    description: 'Walks through each class method to identify instance accesses (this.prop and local variables) and map them to their constructor types',
     result: {},
-    id: "instance-mapper",
+    id: 'instance-mapper',
     dependencies: ['files']
 };
 

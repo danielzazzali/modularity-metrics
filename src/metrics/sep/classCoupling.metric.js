@@ -38,21 +38,21 @@ const visitors = {
             }
 
             const callerClass = node.id.name
-            // state.result[state.currentFile][callerClass] = [];
 
             path.traverse({
                 ClassMethod(innerPath) {
                     innerPath.traverse({
                         NewExpression(deepPath) {
                             let callerMethod = innerPath.node.key.name;
-                            const calleeClass = deepPath.node.callee.object.name;
-                            let calleeMethod = deepPath.node.callee.property.name;
+                            const calleeClass = deepPath.node.callee.name;
+                            let calleeMethod = '_constructor';
 
                             let count = false;
                             let calleeMethodIndex = 0;
                             let calleeFilepath = '';
-                        },
 
+
+                        },
                         CallExpression(deepPath) {
                             if (deepPath.node.callee.type === 'MemberExpression' &&
                                 deepPath.node.callee.object.type === 'Identifier' &&
