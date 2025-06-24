@@ -11,7 +11,7 @@ const visitors = {
     Program(path) {
         state.currentFile = path.node.filePath;
         state.result[state.currentFile] = state.dependencies['classes-per-file'][state.currentFile];
-        console.log(state.dependencies['instance-mapper'][state.currentFile]);
+        //console.log(state.dependencies['instance-mapper'][state.currentFile]);
     },
 
     ClassDeclaration(path) {
@@ -44,6 +44,12 @@ const visitors = {
                 ClassMethod(innerPath) {
                     innerPath.traverse({
                         NewExpression(deepPath) {
+                            /* Example:
+                            new ClassF();
+
+                            Count the call to 'constructor' method (_constructor)
+                            */
+
                             let callerMethod = innerPath.node.key.name;
                             const calleeClass = deepPath.node.callee.name;
                             let calleeMethod = '_constructor';
@@ -52,9 +58,81 @@ const visitors = {
                             let calleeMethodIndex = 0;
                             let calleeFilepath = '';
 
+                            for (const [filePath, classes] of Object.entries(state.result)) {
+                                // If the target class exists in this file
+                                if (classes[calleeClass]) {
+                                    // Check each method node in that class
+                                    for (const methodNode of classes[calleeClass]) {
+                                        if (methodNode.kind === 'constructor') {
+                                            count = true;
+                                            calleeFilepath = filePath;
+                                            break;
+                                        }
+                                        calleeMethodIndex++;
+                                    }
+                                    break;
+                                }
+                            }
 
+                            let callerMethodIndex = 0;
+
+                            if (callerMethod === 'constructor') {
+                                for (const methodNode of state.result[state.currentFile][callerClass]) {
+                                    if (methodNode.kind === 'constructor') {
+                                        break;
+                                    }
+                                    callerMethodIndex++;
+                                }
+                            } else {
+                                // Search method node
+                                for (const methodNode of state.result[state.currentFile][callerClass]) {
+                                    const possibleCallerMethod = methodNode.key && methodNode.key.name;
+                                    if (callerMethod === possibleCallerMethod) {
+                                        break;
+                                    }
+                                    callerMethodIndex++;
+                                }
+                            }
+
+                            if (callerMethod === 'constructor') callerMethod = '_constructor'
+
+                            if (count) {
+                                if (!state.result[state.currentFile][callerClass][callerMethodIndex]['fan-out']) {
+                                    state.result[state.currentFile][callerClass][callerMethodIndex]['fan-out'] = {};
+                                }
+
+                                if (!state.result[state.currentFile][callerClass][callerMethodIndex]['fan-out'][calleeClass]) {
+                                    state.result[state.currentFile][callerClass][callerMethodIndex]['fan-out'][calleeClass] = {}
+                                }
+
+                                if (!state.result[state.currentFile][callerClass][callerMethodIndex]['fan-out'][calleeClass][calleeMethod]) {
+                                    state.result[state.currentFile][callerClass][callerMethodIndex]['fan-out'][calleeClass][calleeMethod] = 0;
+                                }
+
+                                state.result[state.currentFile][callerClass][callerMethodIndex]['fan-out'][calleeClass][calleeMethod]++;
+
+
+                                if (!state.result[calleeFilepath][calleeClass][calleeMethodIndex]['fan-in']) {
+                                    state.result[calleeFilepath][calleeClass][calleeMethodIndex]['fan-in'] = {};
+                                }
+
+                                if (!state.result[calleeFilepath][calleeClass][calleeMethodIndex]['fan-in'][callerClass]) {
+                                    state.result[calleeFilepath][calleeClass][calleeMethodIndex]['fan-in'][callerClass] = {}
+                                }
+
+                                if (!state.result[calleeFilepath][calleeClass][calleeMethodIndex]['fan-in'][callerClass][callerMethod]) {
+                                    state.result[calleeFilepath][calleeClass][calleeMethodIndex]['fan-in'][callerClass][callerMethod] = 0;
+                                }
+
+                                state.result[calleeFilepath][calleeClass][calleeMethodIndex]['fan-in'][callerClass][callerMethod]++;
+                            }
                         },
                         CallExpression(deepPath) {
+                            /* Example:
+                            ClassF.foo()
+
+                            This case does not consider instances
+                            */
                             if (deepPath.node.callee.type === 'MemberExpression' &&
                                 deepPath.node.callee.object.type === 'Identifier' &&
                                 deepPath.node.callee.property.type === 'Identifier'
@@ -94,8 +172,6 @@ const visitors = {
                                     }
                                     callerMethodIndex++;
                                 }
-
-                                console.log('class:', callerClass, 'method:', callerMethod, 'is calling class:', calleeClass, 'on method:', calleeMethod)
 
                                 if (calleeMethod === 'constructor') calleeMethod = '_constructor'
                                 if (callerMethod === 'constructor') callerMethod = '_constructor'
