@@ -11,7 +11,6 @@ const visitors = {
     Program(path) {
         state.currentFile = path.node.filePath;
         state.result[state.currentFile] = state.dependencies['classes-per-file'][state.currentFile];
-        //console.log(state.dependencies['instance-mapper'][state.currentFile]);
     },
 
     ClassDeclaration(path) {
@@ -49,7 +48,6 @@ const visitors = {
 
                             Count the call to 'constructor' method (_constructor)
                             */
-
                             let callerMethod = innerPath.node.key.name;
                             const calleeClass = deepPath.node.callee.name;
                             let calleeMethod = '_constructor';
@@ -130,15 +128,102 @@ const visitors = {
                         CallExpression(deepPath) {
                             /* Example:
                             ClassF.foo()
-
-                            This case does not consider instances
+                            myCar.start(); (Constant/Variable instance call)
                             */
                             if (deepPath.node.callee.type === 'MemberExpression' &&
                                 deepPath.node.callee.object.type === 'Identifier' &&
                                 deepPath.node.callee.property.type === 'Identifier'
                             ) {
                                 let callerMethod = innerPath.node.key.name;
-                                const calleeClass = deepPath.node.callee.object.name;
+                                let calleeClass = state.dependencies['instance-mapper'][state.currentFile][callerClass][deepPath.node.callee.object.name];
+
+                                if (calleeClass === undefined) {
+                                    calleeClass = deepPath.node.callee.object.name;
+                                }
+
+                                let calleeMethod = deepPath.node.callee.property.name;
+
+                                let count = false;
+                                let calleeMethodIndex = 0;
+                                let calleeFilepath = '';
+
+                                for (const [filePath, classes] of Object.entries(state.result)) {
+                                    // If the target class exists in this file
+                                    if (classes[calleeClass]) {
+                                        // Check each method node in that class
+                                        for (const methodNode of classes[calleeClass]) {
+                                            const possibleCalleeMethod = methodNode.key && methodNode.key.name;
+                                            if (calleeMethod === possibleCalleeMethod) {
+                                                count = true;
+                                                calleeFilepath = filePath;
+                                                break;
+                                            }
+                                            calleeMethodIndex++;
+                                        }
+                                        break;
+                                    }
+                                }
+
+                                let callerMethodIndex = 0;
+
+                                // Search method node
+                                for (const methodNode of state.result[state.currentFile][callerClass]) {
+                                    const possibleCallerMethod = methodNode.key && methodNode.key.name;
+                                    if (callerMethod === possibleCallerMethod) {
+                                        break;
+                                    }
+                                    callerMethodIndex++;
+                                }
+
+                                if (calleeMethod === 'constructor') calleeMethod = '_constructor'
+                                if (callerMethod === 'constructor') callerMethod = '_constructor'
+
+                                if (count) {
+                                    if (!state.result[state.currentFile][callerClass][callerMethodIndex]['fan-out']) {
+                                        state.result[state.currentFile][callerClass][callerMethodIndex]['fan-out'] = {};
+                                    }
+
+                                    if (!state.result[state.currentFile][callerClass][callerMethodIndex]['fan-out'][calleeClass]) {
+                                        state.result[state.currentFile][callerClass][callerMethodIndex]['fan-out'][calleeClass] = {}
+                                    }
+
+                                    if (!state.result[state.currentFile][callerClass][callerMethodIndex]['fan-out'][calleeClass][calleeMethod]) {
+                                        state.result[state.currentFile][callerClass][callerMethodIndex]['fan-out'][calleeClass][calleeMethod] = 0;
+                                    }
+
+                                    state.result[state.currentFile][callerClass][callerMethodIndex]['fan-out'][calleeClass][calleeMethod]++;
+
+
+                                    if (!state.result[calleeFilepath][calleeClass][calleeMethodIndex]['fan-in']) {
+                                        state.result[calleeFilepath][calleeClass][calleeMethodIndex]['fan-in'] = {};
+                                    }
+
+                                    if (!state.result[calleeFilepath][calleeClass][calleeMethodIndex]['fan-in'][callerClass]) {
+                                        state.result[calleeFilepath][calleeClass][calleeMethodIndex]['fan-in'][callerClass] = {}
+                                    }
+
+                                    if (!state.result[calleeFilepath][calleeClass][calleeMethodIndex]['fan-in'][callerClass][callerMethod]) {
+                                        state.result[calleeFilepath][calleeClass][calleeMethodIndex]['fan-in'][callerClass][callerMethod] = 0;
+                                    }
+
+                                    state.result[calleeFilepath][calleeClass][calleeMethodIndex]['fan-in'][callerClass][callerMethod]++;
+                                }
+
+                                return;
+                            }
+
+                            /* Example:
+                            this.car.start()
+
+                            This case counts property instances
+                            */
+                            if (deepPath.node.callee.type === 'MemberExpression' &&
+                                deepPath.node.callee.property.type === 'Identifier' &&
+                                deepPath.node.callee.object.type === 'MemberExpression' &&
+                                deepPath.node.callee.object.object.type === 'ThisExpression'
+                            ) {
+                                let callerMethod = innerPath.node.key.name;
+                                const calleeClass = state.dependencies['instance-mapper'][state.currentFile][callerClass][`this.${deepPath.node.callee.object.property.name}`];
                                 let calleeMethod = deepPath.node.callee.property.name;
 
                                 let count = false;
@@ -239,13 +324,7 @@ const visitors = {
     //                 ClassMethod(innerPath) {
     //                     state.result[state.currentFile][className].push(innerPath.node);
     //                 },
-    //                 ClassPrivateMethod(innerPath) {
-    //                     state.result[state.currentFile][className].push(innerPath.node);
-    //                 },
     //                 ClassProperty(innerPath) {
-    //                     state.result[state.currentFile][className].push(innerPath.node);
-    //                 },
-    //                 ClassPrivateProperty(innerPath) {
     //                     state.result[state.currentFile][className].push(innerPath.node);
     //                 }
     //             }
@@ -291,13 +370,7 @@ const visitors = {
     //                 ClassMethod(innerPath) {
     //                     state.result[state.currentFile][className].push(innerPath.node);
     //                 },
-    //                 ClassPrivateMethod(innerPath) {
-    //                     state.result[state.currentFile][className].push(innerPath.node);
-    //                 },
     //                 ClassProperty(innerPath) {
-    //                     state.result[state.currentFile][className].push(innerPath.node);
-    //                 },
-    //                 ClassPrivateProperty(innerPath) {
     //                     state.result[state.currentFile][className].push(innerPath.node);
     //                 }
     //             }
@@ -321,13 +394,7 @@ const visitors = {
     //                 ClassMethod(innerPath) {
     //                     state.result[state.currentFile][className].push(innerPath.node);
     //                 },
-    //                 ClassPrivateMethod(innerPath) {
-    //                     state.result[state.currentFile][className].push(innerPath.node);
-    //                 },
     //                 ClassProperty(innerPath) {
-    //                     state.result[state.currentFile][className].push(innerPath.node);
-    //                 },
-    //                 ClassPrivateProperty(innerPath) {
     //                     state.result[state.currentFile][className].push(innerPath.node);
     //                 }
     //             }
@@ -352,13 +419,7 @@ const visitors = {
     //                 ClassMethod(innerPath) {
     //                     state.result[state.currentFile][className].push(innerPath.node);
     //                 },
-    //                 ClassPrivateMethod(innerPath) {
-    //                     state.result[state.currentFile][className].push(innerPath.node);
-    //                 },
     //                 ClassProperty(innerPath) {
-    //                     state.result[state.currentFile][className].push(innerPath.node);
-    //                 },
-    //                 ClassPrivateProperty(innerPath) {
     //                     state.result[state.currentFile][className].push(innerPath.node);
     //                 }
     //             }
