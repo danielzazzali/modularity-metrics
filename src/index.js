@@ -10,12 +10,18 @@ import path from "path";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-async function calculateMetrics({ codePath, customMetricsPath, useDefaultMetrics } = {}) {
+async function calculateMetrics({ codePath, customMetricsPath, useDefaultMetrics = true } = {}) {
     if (!useDefaultMetrics && !customMetricsPath) {
         throw new Error(MESSAGES.ERRORS.ERROR_NO_METRICS);
     }
 
-    const codeFiles = await getFiles(codePath);
+    const projectRoot = path.resolve(__dirname, '..');
+
+    const absoluteCodePath = path.isAbsolute(codePath)
+        ? codePath
+        : path.resolve(projectRoot, codePath);
+
+    const codeFiles = await getFiles(absoluteCodePath);
     const ASTs = await constructASTs(codeFiles);
 
     const metricFiles = await loadMetricFiles(useDefaultMetrics, customMetricsPath, __dirname);

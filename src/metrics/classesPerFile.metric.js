@@ -3,7 +3,8 @@ const state = {
     description: "Analyzes each source file to identify and record all top-level classes defined",
     result: {},
     id: 'classes-per-file',
-    dependencies: ['files']
+    dependencies: ['files'],
+    status: false
 };
 
 const visitors = {
@@ -189,6 +190,8 @@ const visitors = {
 function postProcessing(state){
     if (state.currentFile) delete state.currentFile;
     if (state.dependencies) delete state.dependencies;
+
+    state.status = true;
 }
 
 export { state, visitors, postProcessing };

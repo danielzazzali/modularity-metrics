@@ -3,7 +3,8 @@ const state = {
     description: "Analyzes each class to identify Fan-Out and Fan-In",
     result: {},
     id: 'class-coupling',
-    dependencies: ['classes-per-file', 'instance-mapper']
+    dependencies: ['classes-per-file', 'instance-mapper'],
+    status: false
 };
 
 const visitors = {
@@ -1405,6 +1406,8 @@ const visitors = {
 function postProcessing(state){
     if (state.currentFile) delete state.currentFile;
     if (state.dependencies) delete state.dependencies;
+
+    state.status = true;
 }
 
 export { state, visitors, postProcessing };

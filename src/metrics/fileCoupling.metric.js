@@ -6,7 +6,8 @@ const state = {
     description: 'Analyzes each source file to identify and record all relative file dependencies by resolving import statements, require calls, and TypeScript import equals declarations to their absolute file paths, enabling the measurement of file coupling and module interdependencies.',
     result: {},
     id: 'file-coupling',
-    dependencies: ['files']
+    dependencies: ['files'],
+    status: false
 }
 
 const visitors = {
@@ -114,6 +115,8 @@ function postProcessing(state) {
     // Remove internal state properties
     delete state.currentFile;
     delete state.dependencies;
+
+    state.status = true;
 }
 
 

@@ -3,7 +3,9 @@ const state = {
     description: 'Walks through each class method to identify instance accesses (this.prop and local variables) and map them to their constructor types',
     result: {},
     id: 'instance-mapper',
-    dependencies: ['files']
+    dependencies: ['files'],
+    ignore: true,
+    status: false
 };
 
 const visitors = {
@@ -369,6 +371,8 @@ const visitors = {
 function postProcessing(state){
     if (state.currentFile) delete state.currentFile;
     if (state.dependencies) delete state.dependencies;
+
+    state.status = true;
 }
 
 export { state, visitors, postProcessing };
