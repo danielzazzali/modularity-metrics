@@ -1,14 +1,14 @@
 // 1. Function Declaration
-function functionA() {
+function functionA(): void {
     functionB()
 }
 
 // 2. Function Expression
-const functionB = function () {
+const functionB = function (): void {
     functionC();
 };
 
 // 3. Arrow Function Expression
-const functionC = () => {
+const functionC = (): void => {
     functionA();
 };

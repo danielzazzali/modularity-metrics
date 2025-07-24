@@ -1,6 +1,6 @@
 const state = {
     name: 'Functions Coupling',
-    description: 'Collects all function declarations, function expressions, and arrow functions in each file, grouping them by file path based on the “files” dependency.',
+    description: 'Analyzes each function to identify Fan-Out and Fan-In',
     result: {},
     id: 'function-coupling',
     dependencies: ['functions-per-file'],
