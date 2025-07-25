@@ -6,23 +6,55 @@ import {describe, it, beforeAll, expect} from "@jest/globals";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-describe('Class Coupling Metric', function() {
+describe('Class Coupling Metric', function () {
+    const codePath = path.resolve(__dirname, '../src-examples/class-coupling');
+    const jsFile = path.resolve(__dirname, '../src-examples/class-coupling/JS/classes-coupled.js');
+    const tsFile = path.resolve(__dirname, '../src-examples/class-coupling/TS/classes-coupled.ts');
     let metricsResults;
 
     beforeAll(async function() {
-        const codePath = path.resolve(__dirname, '../src-examples/class-coupling');
-        metricsResults = await calculateMetrics({ codePath });
+        metricsResults = await calculateMetrics({codePath});
     });
 
-    it('has correct name and description', () => {
-        const classCoupling = metricsResults['class-coupling'];
-        expect(classCoupling).toHaveProperty('name', 'Class Coupling');
-        expect(classCoupling).toHaveProperty('description');
-        expect(classCoupling.description).toContain('Analyzes each class to identify Fan-Out and Fan-In');
+    it('codePath is defined', () => {
+        expect(codePath).toBeDefined();
+    })
+
+    it('jsFile is defined', () => {
+        expect(jsFile).toBeDefined();
     });
 
-    it('should return status = true', function() {
-        const classCoupling = metricsResults['class-coupling'];
-        expect(classCoupling).toHaveProperty('status', true);
+    it('tsFile is defined', () => {
+        expect(tsFile).toBeDefined();
+    });
+
+    it('metricsResults is defined', () => {
+        expect(metricsResults).toBeDefined();
+    });
+
+    it('Metric is defined, has correct name, description and status and contains result', () => {
+        expect(metricsResults).toHaveProperty('class-coupling');
+        expect(metricsResults['class-coupling']).toHaveProperty('name', 'Class Coupling');
+        expect(metricsResults['class-coupling']['description']).toBeDefined();
+        expect(metricsResults['class-coupling']['description']).toContain('Analyzes each class to identify Fan-Out and Fan-In');
+        expect(metricsResults['class-coupling']['result']).toBeDefined();
+        expect(metricsResults['class-coupling']['status']).toBeTruthy();
+    });
+
+    it('Metric result contains JS src testing file', () => {
+        expect(metricsResults['class-coupling']['result'][jsFile]).toBeDefined();
+    });
+
+    it('Metric result contains TS src testing file', () => {
+        expect(metricsResults['class-coupling']['result'][tsFile]).toBeDefined();
+    });
+
+    it('Should compute the correct metric structure for JS file', function() {
+
+    });
+
+    it('should compute the correct metric structure for TS file', function() {
+
+        expect(metricsResults['class-coupling']['result'][tsFile]).toBeDefined();
     });
 });

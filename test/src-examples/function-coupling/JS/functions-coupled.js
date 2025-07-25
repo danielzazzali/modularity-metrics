@@ -1,6 +1,6 @@
 // 1. Function Declaration
 function functionA() {
-    functionB()
+    functionB();
 }
 
 // 2. Function Expression

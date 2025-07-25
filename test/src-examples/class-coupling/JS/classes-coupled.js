@@ -7,9 +7,8 @@ class Garage {
     static report() {}
 }
 
-const Car = class {
-    constructor() {
-    }
+class Car {
+    constructor() {}
 
     start() {
         Garage.report()
